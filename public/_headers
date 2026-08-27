@@ -1,0 +1,11 @@
+# Keep PWA entry files fresh after each deployment. Versioned Vite assets can
+# remain cached safely because their filenames change whenever content changes.
+/sw.js
+  Cache-Control: no-cache
+
+/manifest.webmanifest
+  Cache-Control: no-cache
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

@@ -1,0 +1,11 @@
+RewriteEngine On
+
+# PWA installation and service workers require a secure origin.
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Serve React's app shell for client-side routes, while leaving real files
+# (the service worker, manifest, icons and assets) untouched.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [L]

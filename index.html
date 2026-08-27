@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="sw">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>2021familyforever</title>
+    <meta name="description" content="Usimamizi wa wanachama wa 2021familyforever, michango, malipo, taarifa na arifa." />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#4F46E5" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="2021familyforever" />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/png" href="/favicon-48.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- iOS splash screens (generated from the family photo) -->
+    <link rel="apple-touch-startup-image" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" href="/splash-2048x2732.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)" href="/splash-1668x2388.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)" href="/splash-1536x2048.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)" href="/splash-1284x2778.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="/splash-1170x2532.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" href="/splash-1125x2436.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)" href="/splash-1242x2688.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="/splash-750x1334.png" />
+
+    <!-- Branded loading experience -->
+    <style>
+      #app-boot {
+        position: fixed; inset: 0; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 16px;
+        background: url('/splash-750x1334.png') center/cover no-repeat #F7F8FC;
+        z-index: 9999; transition: opacity .25s ease;
+      }
+      #app-boot img { width: 96px; height: 96px; border-radius: 24px; object-fit: cover; box-shadow: 0 8px 24px rgba(23,32,51,.25); }
+      #app-boot p { font-weight: 700; color: #172033; font-family: system-ui, -apple-system, sans-serif; text-shadow: 0 1px 6px rgba(255,255,255,.8); }
+      #app-boot .bar { width: 120px; height: 4px; border-radius: 999px; background: #E5E7EB; overflow: hidden; }
+      #app-boot .bar::after { content: ""; display: block; height: 100%; width: 40%; background: #4F46E5; border-radius: 999px; animation: boot-slide 1s ease-in-out infinite; }
+      @keyframes boot-slide { 0% { transform: translateX(-100%);} 100% { transform: translateX(320%);} }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="app-boot" aria-hidden="true">
+      <p>Inapakia…</p>
+      <div class="bar"></div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      window.addEventListener('load', function () {
+        var boot = document.getElementById('app-boot')
+        if (!boot) return
+        setTimeout(function () {
+          boot.style.opacity = '0'
+          setTimeout(function () { boot.remove() }, 300)
+        }, 350)
+      })
+    </script>
+  </body>
+</html>
