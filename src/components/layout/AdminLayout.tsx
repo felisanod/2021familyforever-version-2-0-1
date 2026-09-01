@@ -35,9 +35,9 @@ export default function AdminLayout() {
   return (
     <div className="h-screen flex bg-background">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-56 bg-surface border-r border-border flex-col shrink-0">
-        <div className="h-14 flex items-center gap-3 px-4 border-b border-border">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+      <aside className="hidden md:flex w-56 bg-surface shadow-neu-sm flex-col shrink-0">
+        <div className="h-14 flex items-center gap-3 px-4 shadow-neu-inset-sm">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center" style={{ boxShadow: 'var(--shadow-neu-sm)' }}>
             <span className="text-white font-bold text-sm">21</span>
           </div>
           <span className="font-semibold text-sm text-text">2021familyforever</span>
@@ -50,13 +50,13 @@ export default function AdminLayout() {
             </NavLink>
           ))}
         </nav>
-        <div className="p-3 border-t border-border space-y-1">
+        <div className="p-3 space-y-1 pt-4">
           <button onClick={() => navigate('/')} className="sidebar-link w-full"><MembersIcon /> Kiolesura cha Mwanachama</button>
         </div>
       </aside>
 
       <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
-        <header className="bg-surface border-b border-border px-4 h-14 flex items-center justify-between gap-3">
+        <header className="bg-surface px-4 h-14 flex items-center justify-between gap-3 shadow-neu-inset-sm">
           <h2 className="font-semibold text-text truncate">{titleMap[location.pathname] ?? 'Dashibodi'}</h2>
           <div className="flex items-center gap-2">
             <span className="text-xs text-text-secondary hidden lg:block">{user?.full_name}</span>
@@ -69,7 +69,7 @@ export default function AdminLayout() {
       </div>
 
       {/* Mobile bottom navigation with compact More menu */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-border h-16 flex items-center justify-around z-50" aria-label="Urambazaji wa ">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface h-16 flex items-center justify-around z-50 shadow-neu-inset-sm" aria-label="Urambazaji wa ">
         {adminNav.map(item => (
           <NavLink
             key={item.to}

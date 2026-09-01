@@ -130,7 +130,7 @@ export default function AdminDashboard() {
                         <div className="h-full bg-success rounded-full transition-all" style={{ width: `${c.completion_percent}%` }} />
                       </div>
                       <p className="text-xs text-text-secondary mt-1">
-                        {c.completed_members} / {c.total_members} wamekamilisha · {formatTZSCompact(c.total_collected)} kati ya {formatTZSCompact(c.amount * c.total_members)}
+                        {c.completed_members} / {c.total_members} DONE · {formatTZSCompact(c.total_collected)} kati ya {formatTZSCompact(c.amount * c.total_members)}
                       </p>
                     </div>
                   ))}

@@ -108,7 +108,7 @@ export default function MemberContributions() {
                   <dd className="font-semibold text-success">{formatTZS(row.total_paid)}</dd>
                 </div>
                 <div className="rounded-lg bg-border-light/40 py-1.5">
-                  <dt className="text-text-secondary text-[10px] uppercase font-semibold">{Number(row.overpaid_amount) > 0 ? 'Lilizidi' : 'Kilichobaki'}</dt>
+                  <dt className="text-text-secondary text-[10px] uppercase font-semibold">{Number(row.overpaid_amount) > 0 ? 'ILIZIDI' : 'Kilichobaki'}</dt>
                   <dd className={`font-semibold ${Number(row.overpaid_amount) > 0 ? 'text-primary' : 'text-error'}`}>
                     {formatTZS(Number(row.overpaid_amount) > 0 ? row.overpaid_amount : row.remaining_amount)}
                   </dd>

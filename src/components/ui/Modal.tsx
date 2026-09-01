@@ -28,7 +28,7 @@ export default function Modal({ open, title, onClose, children, wide = false }: 
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center" role="dialog" aria-modal="true" aria-label={title}>
       <div className="absolute inset-0 bg-text/30 backdrop-blur-[2px]" onClick={onClose} />
-      <div className={`relative bg-surface w-full ${wide ? 'sm:max-w-3xl' : 'sm:max-w-lg'} rounded-t-2xl sm:rounded-2xl shadow-xl border border-border max-h-[90vh] flex flex-col`}>
+      <div className={`relative bg-surface w-full ${wide ? 'sm:max-w-3xl' : 'sm:max-w-lg'} rounded-t-2xl sm:rounded-2xl shadow-neu max-h-[90vh] flex flex-col`}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
           <h3 className="font-semibold text-text">{title}</h3>
           <button onClick={onClose} aria-label="Funga" className="btn btn-ghost btn-sm text-lg leading-none">×</button>

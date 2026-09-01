@@ -9,8 +9,9 @@ import {
 } from '../../services/members'
 import { listPayments } from '../../services/payments'
 import { useDebounce } from '../../hooks/useDebounce'
-import { formatDate, initialsOf } from '../../utils/format'
+import { formatDate } from '../../utils/format'
 import { friendlyError } from '../../utils/errors'
+import Avatar from '../../components/ui/Avatar'
 import { AccountBadge, AggregateBadge, PaymentBadge, RoleBadge } from '../../components/ui/StatusBadge'
 import EmptyState from '../../components/ui/EmptyState'
 import Loading from '../../components/ui/Loading'
@@ -169,12 +170,10 @@ export default function AdminMembers() {
                 {members.map(m => (
                   <tr key={m.user_id} className="hover:bg-border-light/40 cursor-pointer" onClick={() => setSelected(m)}>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary-50 text-primary text-xs font-semibold flex items-center justify-center shrink-0 overflow-hidden">
-                          {m.profile_picture ? <img src={m.profile_picture} alt="" className="w-full h-full object-cover" /> : initialsOf(m.full_name)}
+                        <div className="flex items-center gap-3">
+                          <Avatar src={m.profile_picture} name={m.full_name} className="w-8 h-8 text-xs" />
+                          <span className="font-medium text-text">{m.full_name}</span>
                         </div>
-                        <span className="font-medium text-text">{m.full_name}</span>
-                      </div>
                     </td>
                     <td className="px-4 py-3 text-text-secondary">{m.phone_number}</td>
                     <td className="px-4 py-3 text-text-secondary">{m.region || '—'}</td>
@@ -195,9 +194,7 @@ export default function AdminMembers() {
             {members.map(m => (
               <button key={m.user_id} onClick={() => setSelected(m)} className="card p-4 w-full text-left">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary-50 text-primary text-sm font-semibold flex items-center justify-center shrink-0 overflow-hidden">
-                    {m.profile_picture ? <img src={m.profile_picture} alt="" className="w-full h-full object-cover" /> : initialsOf(m.full_name)}
-                  </div>
+                  <Avatar src={m.profile_picture} name={m.full_name} className="w-10 h-10 text-sm" />
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-text truncate">{m.full_name}</p>
                     <p className="text-xs text-text-secondary">{m.phone_number} · {m.region || '—'}</p>
@@ -381,9 +378,7 @@ function MemberDetail({
     <div>
       {/* Header */}
       <div className="flex items-center gap-4 pb-5 border-b border-border">
-        <div className="w-14 h-14 rounded-2xl bg-primary-50 text-primary text-lg font-bold flex items-center justify-center overflow-hidden shrink-0">
-          {member.profile_picture ? <img src={member.profile_picture} alt="" className="w-full h-full object-cover" /> : initialsOf(member.full_name)}
-        </div>
+        <Avatar src={member.profile_picture} name={member.full_name} className="w-14 h-14 rounded-2xl text-lg font-bold" />
         <div className="min-w-0">
           <h3 className="text-lg font-bold text-text truncate">{member.full_name}</h3>
           <p className="text-sm text-text-secondary">{member.phone_number} · {member.city || '—'}, {member.region || '—'}</p>

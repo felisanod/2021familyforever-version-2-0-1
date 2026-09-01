@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Profile } from '../../types'
 import { listMemberDirectory } from '../../services/members'
 import { useDebounce } from '../../hooks/useDebounce'
-import { initialsOf } from '../../utils/format'
+import Avatar from '../../components/ui/Avatar'
 import EmptyState from '../../components/ui/EmptyState'
 import Loading from '../../components/ui/Loading'
 
@@ -78,13 +78,7 @@ export default function MemberMembers() {
               <div className="card divide-y divide-border-light overflow-hidden">
                 {group.map(m => (
                   <div key={m.user_id} className="flex items-center gap-3 p-3.5">
-                    <div className="w-10 h-10 rounded-full bg-primary-50 text-primary text-sm font-semibold flex items-center justify-center shrink-0 overflow-hidden">
-                      {m.profile_picture ? (
-                        <img src={m.profile_picture} alt="" loading="lazy" className="w-full h-full object-cover" />
-                      ) : (
-                        initialsOf(m.full_name)
-                      )}
-                    </div>
+                    <Avatar src={m.profile_picture} name={m.full_name} className="w-10 h-10 text-sm" />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-text truncate flex items-center gap-2">
                         {m.full_name}

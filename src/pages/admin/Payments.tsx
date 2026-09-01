@@ -115,7 +115,7 @@ export default function AdminPayments() {
         {selectedContribution && (
           <p className="text-xs text-text-secondary mt-2">
             Kinachohitajika {formatTZS(selectedContribution.amount)} kwa kila mwanachama ·{' '}
-            {selectedContribution.completed_members} wamekamilisha · {selectedContribution.partial_members} wamekamilisha kiasi ·{' '}
+            {selectedContribution.completed_members} DONE · {selectedContribution.partial_members} DONE kiasi ·{' '}
             {selectedContribution.unpaid_members + selectedContribution.pending_members} hawajalipa
             {selectedContribution.status === 'CLOSED' && (
               <span className="text-error font-medium"> · Mchango huu umefungwa — malipo mapya hayakubaliki.</span>
@@ -191,7 +191,7 @@ export default function AdminPayments() {
                     <dd className="font-semibold text-success">{formatTZS(r.total_paid)}</dd>
                   </div>
                   <div className="rounded-lg bg-border-light/40 py-1.5">
-                    <dt className="text-text-secondary text-[10px] uppercase font-semibold">{r.overpaid_amount > 0 ? 'Lilizidi' : 'Kilichobaki'}</dt>
+                    <dt className="text-text-secondary text-[10px] uppercase font-semibold">{r.overpaid_amount > 0 ? 'ILIZIDI' : 'Kilichobaki'}</dt>
                     <dd className={`font-semibold ${r.overpaid_amount > 0 ? 'text-primary' : 'text-error'}`}>
                       {formatTZS(r.overpaid_amount > 0 ? r.overpaid_amount : r.remaining_amount)}
                     </dd>
@@ -315,7 +315,7 @@ function MemberPaymentDetail({
               <span className="text-text-secondary">Kilichobaki <strong className="text-error">{formatTZS(member.remaining_amount)}</strong></span>
             )}
             {member.overpaid_amount > 0 && (
-              <span className="text-text-secondary">Lilizidi <strong className="text-primary">{formatTZS(member.overpaid_amount)}</strong></span>
+              <span className="text-text-secondary">ILIZIDI <strong className="text-primary">{formatTZS(member.overpaid_amount)}</strong></span>
             )}
           </div>
         </div>
@@ -444,7 +444,7 @@ function AddPaymentModal({
             <p className="font-semibold text-success">{formatTZS(member.total_paid)}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold tracking-wider text-text-secondary uppercase">{member.overpaid_amount > 0 ? 'Lilizidi' : 'Kilichobaki'}</p>
+            <p className="text-[10px] font-bold tracking-wider text-text-secondary uppercase">{member.overpaid_amount > 0 ? 'ILIZIDI' : 'Kilichobaki'}</p>
             <p className={`font-semibold ${member.overpaid_amount > 0 ? 'text-primary' : 'text-error'}`}>
               {formatTZS(member.overpaid_amount > 0 ? member.overpaid_amount : member.remaining_amount)}
             </p>

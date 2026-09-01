@@ -27,9 +27,9 @@ export default function MemberLayout() {
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      <header className="bg-surface border-b border-border px-4 h-14 flex items-center justify-between sticky top-0 z-50">
+      <header className="bg-surface px-4 h-14 flex items-center justify-between sticky top-0 z-50 shadow-neu-inset-sm">
         <button className="flex items-center gap-3" onClick={() => navigate('/')} aria-label="2021familyforever home">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center" style={{ boxShadow: 'var(--shadow-neu-sm)' }}>
             <span className="text-white font-bold text-sm">21</span>
           </div>
           <span className="font-semibold text-text hidden sm:block">2021familyforever</span>
@@ -44,7 +44,7 @@ export default function MemberLayout() {
       </main>
 
       {/* Mobile bottom navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-border h-16 flex items-center justify-around z-50" aria-label="Urambazaji mkuu">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface h-16 flex items-center justify-around z-50 shadow-neu-inset-sm" aria-label="Urambazaji mkuu">
         {navItems.map(item => (
           <NavLink
             key={item.to}
