@@ -115,7 +115,7 @@ export default function AdminPayments() {
         {selectedContribution && (
           <p className="text-xs text-text-secondary mt-2">
             Kinachohitajika {formatTZS(selectedContribution.amount)} kwa kila mwanachama ·{' '}
-            {selectedContribution.completed_members} DONE · {selectedContribution.partial_members} DONE kiasi ·{' '}
+            {selectedContribution.completed_members} WALOMALIZA · {selectedContribution.partial_members} WALOMALIZA kiasi ·{' '}
             {selectedContribution.unpaid_members + selectedContribution.pending_members} hawajalipa
             {selectedContribution.status === 'CLOSED' && (
               <span className="text-error font-medium"> · Mchango huu umefungwa — malipo mapya hayakubaliki.</span>

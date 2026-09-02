@@ -132,7 +132,7 @@ export default function AdminMembers() {
           <option value="PENDING">Inasubiri Idhini</option>
           <option value="ACTIVE">Hai</option>
           <option value="SUSPENDED">Imesimamishwa</option>
-          <option value="DELETED">Imefutwa</option>
+          <option value="DELETED"><Amefutwa></Amefutwa></option>
         </select>
         <select className="input sm:w-44" value={region} onChange={e => setRegion(e.target.value)} aria-label="Chuja kwa mkoa">
           <option value="">Mikoa yote</option>

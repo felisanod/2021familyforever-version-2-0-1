@@ -1309,7 +1309,7 @@ define(['exports'], (function (exports) { 'use strict';
       return cursorAdvanceMethods || (cursorAdvanceMethods = [IDBCursor.prototype.advance, IDBCursor.prototype.continue, IDBCursor.prototype.continuePrimaryKey]);
     }
     const cursorRequestMap = new WeakMap();
-    const transactionDoneMap = new WeakMap();
+    const transactionWALOMALIZAMap = new WeakMap();
     const transactionStoreNamesMap = new WeakMap();
     const transformCache = new WeakMap();
     const reverseTransformCache = new WeakMap();
@@ -1343,10 +1343,10 @@ define(['exports'], (function (exports) { 'use strict';
       reverseTransformCache.set(promise, request);
       return promise;
     }
-    function cacheDonePromiseForTransaction(tx) {
-      // Early bail if we've already created a done promise for this transaction.
-      if (transactionDoneMap.has(tx)) return;
-      const done = new Promise((resolve, reject) => {
+    function cacheWALOMALIZAPromiseForTransaction(tx) {
+      // Early bail if we've already created a WALOMALIZA promise for this transaction.
+      if (transactionWALOMALIZAMap.has(tx)) return;
+      const WALOMALIZA = new Promise((resolve, reject) => {
         const unlisten = () => {
           tx.removeEventListener('complete', complete);
           tx.removeEventListener('error', error);
@@ -1365,13 +1365,13 @@ define(['exports'], (function (exports) { 'use strict';
         tx.addEventListener('abort', error);
       });
       // Cache it for later retrieval.
-      transactionDoneMap.set(tx, done);
+      transactionWALOMALIZAMap.set(tx, WALOMALIZA);
     }
     let idbProxyTraps = {
       get(target, prop, receiver) {
         if (target instanceof IDBTransaction) {
-          // Special handling for transaction.done.
-          if (prop === 'done') return transactionDoneMap.get(target);
+          // Special handling for transaction.WALOMALIZA.
+          if (prop === 'WALOMALIZA') return transactionWALOMALIZAMap.get(target);
           // Polyfill for objectStoreNames because of Edge.
           if (prop === 'objectStoreNames') {
             return target.objectStoreNames || transactionStoreNamesMap.get(target);
@@ -1389,7 +1389,7 @@ define(['exports'], (function (exports) { 'use strict';
         return true;
       },
       has(target, prop) {
-        if (target instanceof IDBTransaction && (prop === 'done' || prop === 'store')) {
+        if (target instanceof IDBTransaction && (prop === 'WALOMALIZA' || prop === 'store')) {
           return true;
         }
         return prop in target;
@@ -1430,9 +1430,9 @@ define(['exports'], (function (exports) { 'use strict';
     }
     function transformCachableValue(value) {
       if (typeof value === 'function') return wrapFunction(value);
-      // This doesn't return, it just creates a 'done' promise for the transaction,
-      // which is later returned for transaction.done (see idbObjectHandler).
-      if (value instanceof IDBTransaction) cacheDonePromiseForTransaction(value);
+      // This doesn't return, it just creates a 'WALOMALIZA' promise for the transaction,
+      // which is later returned for transaction.WALOMALIZA (see idbObjectHandler).
+      if (value instanceof IDBTransaction) cacheWALOMALIZAPromiseForTransaction(value);
       if (instanceOfAny(value, getIdbProxyableTypes())) return new Proxy(value, idbProxyTraps);
       // Return the same value back if we're not going to transform it.
       return value;
@@ -1526,11 +1526,11 @@ define(['exports'], (function (exports) { 'use strict';
         let target = tx.store;
         if (useIndex) target = target.index(args.shift());
         // Must reject if op rejects.
-        // If it's a write operation, must reject if tx.done rejects.
+        // If it's a write operation, must reject if tx.WALOMALIZA rejects.
         // Must reject with op rejection first.
         // Must resolve with op value.
         // Must handle both promises (no unhandled rejections)
-        return (await Promise.all([target[targetFuncName](...args), isWrite && tx.done]))[0];
+        return (await Promise.all([target[targetFuncName](...args), isWrite && tx.WALOMALIZA]))[0];
       };
       cachedMethods.set(prop, method);
       return method;
@@ -1635,7 +1635,7 @@ define(['exports'], (function (exports) { 'use strict';
           durability: 'relaxed'
         });
         await tx.store.put(entry);
-        await tx.done;
+        await tx.WALOMALIZA;
       }
       /**
        * Returns the timestamp stored for a given URL.
@@ -1960,10 +1960,10 @@ define(['exports'], (function (exports) { 'use strict';
           dontWaitFor(cacheExpiration.expireEntries());
           // Update the metadata for the request URL to the current timestamp,
           // but don't `await` it as we don't want to block the response.
-          const updateTimestampDone = cacheExpiration.updateTimestamp(request.url);
+          const updateTimestampWALOMALIZA = cacheExpiration.updateTimestamp(request.url);
           if (event) {
             try {
-              event.waitUntil(updateTimestampDone);
+              event.waitUntil(updateTimestampWALOMALIZA);
             } catch (error) {
               {
                 // The event may not be a fetch event; only log the URL if it is.
@@ -2273,7 +2273,7 @@ define(['exports'], (function (exports) { 'use strict';
      * {@link workbox-strategies.Strategy~handle} or
      * {@link workbox-strategies.Strategy~handleAll} that wraps all fetch and
      * cache actions around plugin callbacks and keeps track of when the strategy
-     * is "done" (i.e. all added `event.waitUntil()` promises have resolved).
+     * is "WALOMALIZA" (i.e. all added `event.waitUntil()` promises have resolved).
      *
      * @memberof workbox-strategies
      */
@@ -2677,7 +2677,7 @@ define(['exports'], (function (exports) { 'use strict';
        * `FetchEvent`).
        *
        * Note: you can await
-       * {@link workbox-strategies.StrategyHandler~doneWaiting}
+       * {@link workbox-strategies.StrategyHandler~WALOMALIZAWaiting}
        * to know when all added promises have settled.
        *
        * @param {Promise} promise A promise to add to the extend lifetime promises
@@ -2692,12 +2692,12 @@ define(['exports'], (function (exports) { 'use strict';
        * {@link workbox-strategies.StrategyHandler~waitUntil}
        * have settled.
        *
-       * Note: any work done after `doneWaiting()` settles should be manually
+       * Note: any work WALOMALIZA after `WALOMALIZAWaiting()` settles should be manually
        * passed to an event's `waitUntil()` method (not this handler's
        * `waitUntil()` method), otherwise the service worker thread may be killed
        * prior to your work completing.
        */
-      async doneWaiting() {
+      async WALOMALIZAWaiting() {
         while (this._extendLifetimePromises.length) {
           const promises = this._extendLifetimePromises.splice(0);
           const result = await Promise.allSettled(promises);
@@ -2847,18 +2847,18 @@ define(['exports'], (function (exports) { 'use strict';
        * @param {*} [options.params]
        */
       handle(options) {
-        const [responseDone] = this.handleAll(options);
-        return responseDone;
+        const [responseWALOMALIZA] = this.handleAll(options);
+        return responseWALOMALIZA;
       }
       /**
        * Similar to {@link workbox-strategies.Strategy~handle}, but
        * instead of just returning a `Promise` that resolves to a `Response` it
-       * it will return an tuple of `[response, done]` promises, where the former
+       * it will return an tuple of `[response, WALOMALIZA]` promises, where the former
        * (`response`) is equivalent to what `handle()` returns, and the latter is a
        * Promise that will resolve once any promises that were added to
        * `event.waitUntil()` as part of performing the strategy have completed.
        *
-       * You can await the `done` promise to ensure any extra work performed by
+       * You can await the `WALOMALIZA` promise to ensure any extra work performed by
        * the strategy (usually caching responses) completes successfully.
        *
        * @param {FetchEvent|Object} options A `FetchEvent` or an object with the
@@ -2868,7 +2868,7 @@ define(['exports'], (function (exports) { 'use strict';
        *     request.
        * @param {URL} [options.url]
        * @param {*} [options.params]
-       * @return {Array<Promise>} A tuple of [response, done]
+       * @return {Array<Promise>} A tuple of [response, WALOMALIZA]
        *     promises that can be used to determine when the response resolves as
        *     well as when the handler has completed all its work.
        */
@@ -2888,10 +2888,10 @@ define(['exports'], (function (exports) { 'use strict';
           request,
           params
         });
-        const responseDone = this._getResponse(handler, request, event);
-        const handlerDone = this._awaitComplete(responseDone, handler, request, event);
+        const responseWALOMALIZA = this._getResponse(handler, request, event);
+        const handlerWALOMALIZA = this._awaitComplete(responseWALOMALIZA, handler, request, event);
         // Return an array of promises, suitable for use with Promise.all().
-        return [responseDone, handlerDone];
+        return [responseWALOMALIZA, handlerWALOMALIZA];
       }
       async _getResponse(handler, request, event) {
         await handler.runCallbacks('handlerWillStart', {
@@ -2937,14 +2937,14 @@ define(['exports'], (function (exports) { 'use strict';
         }
         return response;
       }
-      async _awaitComplete(responseDone, handler, request, event) {
+      async _awaitComplete(responseWALOMALIZA, handler, request, event) {
         let response;
         let error;
         try {
-          response = await responseDone;
+          response = await responseWALOMALIZA;
         } catch (error) {
           // Ignore errors, as response errors should be caught via the `response`
-          // promise above. The `done` promise will only throw for errors in
+          // promise above. The `WALOMALIZA` promise will only throw for errors in
           // promises passed to `handler.waitUntil()`.
         }
         try {
@@ -2953,7 +2953,7 @@ define(['exports'], (function (exports) { 'use strict';
             request,
             response
           });
-          await handler.doneWaiting();
+          await handler.WALOMALIZAWaiting();
         } catch (waitUntilError) {
           if (waitUntilError instanceof Error) {
             error = waitUntilError;
@@ -3795,7 +3795,7 @@ define(['exports'], (function (exports) { 'use strict';
           // Only remove the default plugin; multiple custom plugins are allowed.
           this.plugins.splice(defaultPluginIndex, 1);
         }
-        // Nothing needs to be done if cacheWillUpdatePluginCount is 1
+        // Nothing needs to be WALOMALIZA if cacheWillUpdatePluginCount is 1
       }
     }
     PrecacheStrategy.defaultPrecacheCacheabilityPlugin = {

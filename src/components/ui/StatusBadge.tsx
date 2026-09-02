@@ -30,10 +30,10 @@ export function ContributionBadge({ status }: { status: ContributionStatus }) {
 
 export function AccountBadge({ status }: { status: AccountStatus }) {
   const map = {
-    PENDING: { cls: 'bg-warning-50 text-warning border-warning/20', mark: '◔', label: 'Inasubiri Idhini' },
+    PENDING: { cls: 'bg-warning-50 text-warning border-warning/20', mark: '◔', label: 'Anasubiri Idhini' },
     ACTIVE: { cls: 'bg-success-50 text-success border-success/20', mark: '✓', label: 'Hai' },
-    SUSPENDED: { cls: 'bg-warning-50 text-warning border-warning/20', mark: '!', label: 'Imesimamishwa' },
-    DELETED: { cls: 'bg-error-50 text-error border-error/20', mark: '✕', label: 'Imefutwa' },
+    SUSPENDED: { cls: 'bg-warning-50 text-warning border-warning/20', mark: '!', label: 'Amesimamishwa' },
+    DELETED: { cls: 'bg-error-50 text-error border-error/20', mark: '✕', label: 'Amefutwa' },
   }[status]
   return (
     <span className={`badge border ${map.cls}`}>

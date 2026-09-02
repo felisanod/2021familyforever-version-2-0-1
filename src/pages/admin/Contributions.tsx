@@ -189,7 +189,7 @@ export default function AdminContributions() {
               {/* Member payment breakdown */}
               <div className="grid grid-cols-4 gap-2 text-center">
                 <MiniCount label="Wanachama" value={c.total_members} />
-                <MiniCount label="DONE" value={c.completed_members} tone="success" />
+                <MiniCount label="WALOMALIZA" value={c.completed_members} tone="success" />
                 <MiniCount label="Kiasi" value={c.partial_members} tone="warning" />
                 <MiniCount label="Hawajalipa" value={c.unpaid_members + c.pending_members} tone="error" />
               </div>
@@ -239,8 +239,8 @@ export default function AdminContributions() {
               <Info label="Tarehe ya Kufunguka" value={formatDate(detail.opening_date)} />
               <Info label="Tarehe ya Kufunga" value={formatDate(detail.due_date)} />
               <Info label="Wanachama Wote" value={String(detail.total_members)} />
-              <Info label="DONE" value={String(detail.completed_members)} />
-              <Info label="DONE Kiasi" value={String(detail.partial_members)} />
+              <Info label="WALOMALIZA" value={String(detail.completed_members)} />
+              <Info label="WALOMALIZA Kiasi" value={String(detail.partial_members)} />
               <Info label="Hawajalipa / Wanasubiri" value={String(detail.unpaid_members + detail.pending_members)} />
               <Info label="Jumla Yaliyokusanywa" value={formatTZS(detail.total_collected)} />
               <Info label="Ukamilifu" value={`${detail.completion_percent}%`} />

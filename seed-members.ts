@@ -76,7 +76,7 @@ async function seedMembers() {
       errors++
     }
   }
-  console.log(`\nDone! Updated: ${updated}, Errors: ${errors}`)
+  console.log(`\nWALOMALIZA! Updated: ${updated}, Errors: ${errors}`)
 }
 
 seedMembers()

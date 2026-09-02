@@ -224,7 +224,7 @@ export default function AdminAnnouncements() {
       <CreateAnnouncementModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        onDone={(message, kind) => {
+        onWALOMALIZA={(message, kind) => {
           setCreateOpen(false)
           toast.showToast(message, kind ?? 'success')
           void load()
@@ -276,11 +276,11 @@ type Step = 'edit' | 'preview'
 function CreateAnnouncementModal({
   open,
   onClose,
-  onDone,
+  onWALOMALIZA,
 }: {
   open: boolean
   onClose: () => void
-  onDone: (message: string, kind?: 'success' | 'error') => void
+  onWALOMALIZA: (message: string, kind?: 'success' | 'error') => void
 }) {
   const [step, setStep] = useState<Step>('edit')
   const [saving, setSaving] = useState(false)
@@ -388,7 +388,7 @@ function CreateAnnouncementModal({
       const { error: err } = await saveDraftAnnouncement(payload)
       setSaving(false)
       if (err) setError(friendlyError(err))
-      else onDone('Rasimu imehifadhiwa.')
+      else onWALOMALIZA('Rasimu imehifadhiwa.')
       return
     }
 
@@ -397,7 +397,7 @@ function CreateAnnouncementModal({
     if (err || !result) {
       setError(friendlyError(err))
     } else {
-      onDone(`Taarifa imechapishwa — wanachama ${result.recipients.toLocaleString()} wamearifiwa.`)
+      onWALOMALIZA(`Taarifa imechapishwa — wanachama ${result.recipients.toLocaleString()} wamearifiwa.`)
     }
   }
 

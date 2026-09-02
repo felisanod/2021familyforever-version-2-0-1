@@ -131,7 +131,7 @@ export default function Login() {
             </div>
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="label">Namba ya Simu / Kitambulisho</label>
+                <label className="label">Namba ya Simu</label>
                 <input
                   type="text"
                   className="input"
