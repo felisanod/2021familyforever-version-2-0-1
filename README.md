@@ -10,10 +10,32 @@ and **Admin panel**, powered by **Supabase** (PostgreSQL, Auth, Storage, RLS, Re
 
 ```bash
 npm install
-npm run dev        # development server
+npm run dev        # development server (available on 0.0.0.0)
 npm run build      # production build + service worker
-npm run preview    # preview the production build
+npm run preview    # preview the production build on 0.0.0.0:4173
 ```
+
+## Android app
+
+The Android app is a Capacitor wrapper around the production web build. Install
+Android Studio, the Android SDK, and JDK 21, then run:
+
+```bash
+npm install
+npx cap add android       # only needed the first time
+npm run android:sync      # build the website and copy it into Android
+npm run android:open      # open the native project in Android Studio
+```
+
+In Android Studio, select a device or emulator and run the `app` configuration.
+The app requests notification permission only when enabled in the profile.
+Android's system photo picker handles profile-picture selection without broad
+photo or storage permissions.
+
+Notifications use the site's existing Supabase Realtime feed while the app is
+open. Delivering notifications while the app is closed requires a push provider
+(such as Firebase Cloud Messaging) and backend delivery; granting Android
+notification permission alone cannot provide background push.
 
 ### PWA assets
 

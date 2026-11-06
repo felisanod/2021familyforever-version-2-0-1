@@ -1,5 +1,7 @@
-import { Suspense, lazy } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Suspense, lazy, useEffect } from 'react'
+import { Capacitor } from '@capacitor/core'
+import { LocalNotifications } from '@capacitor/local-notifications'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ToastProvider } from './components/ui/Toast'
 import Loading from './components/ui/Loading'
@@ -38,6 +40,43 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+function NativeNotificationNavigation() {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+
+    let active = true
+    let removeListener: (() => Promise<void>) | undefined
+
+    void LocalNotifications.addListener('localNotificationActionPerformed', ({ notification }) => {
+      const path = notification.extra?.path
+      if (typeof path === 'string' && path.startsWith('/')) navigate(path)
+    }).then(listener => {
+      if (active) {
+        removeListener = () => listener.remove()
+      } else {
+        void listener.remove().catch(error => {
+          console.error('Failed to remove native notification listener', error)
+        })
+      }
+    }).catch(error => {
+      console.error('Failed to listen for native notification taps', error)
+    })
+
+    return () => {
+      active = false
+      if (removeListener) {
+        void removeListener().catch(error => {
+          console.error('Failed to remove native notification listener', error)
+        })
+      }
+    }
+  }, [navigate])
+
+  return null
+}
+
 function AppRoutes() {
   return (
     <Suspense fallback={<Loading full />}>
@@ -70,11 +109,12 @@ function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
+      <NativeNotificationNavigation />
       <AuthProvider>
         <ToastProvider>
           <OfflineIndicator />
           <AppRoutes />
-          <InstallPrompt />
+          {!Capacitor.isNativePlatform() && <InstallPrompt />}
         </ToastProvider>
       </AuthProvider>
     </BrowserRouter>

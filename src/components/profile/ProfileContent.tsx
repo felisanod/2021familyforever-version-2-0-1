@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth, phoneToEmail, legacyPhoneToEmail } from '../../contexts/AuthContext'
 import { supabase } from '../../types'
 import { updateOwnProfile } from '../../services/members'
@@ -9,6 +9,12 @@ import { AccountBadge, RoleBadge } from '../ui/StatusBadge'
 import Modal from '../ui/Modal'
 import { useToast } from '../ui/Toast'
 import { useInstall } from '../../hooks/useInstall'
+import { Capacitor } from '@capacitor/core'
+import {
+  getNotificationPermission,
+  requestNotificationPermission,
+  showDeviceNotification,
+} from '../../services/device-notifications'
 
 type Prefs = { ANNOUNCEMENT: boolean; CONTRIBUTION: boolean; PAYMENT: boolean; SYSTEM: boolean }
 
@@ -31,9 +37,23 @@ export default function ProfileContent() {
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ full_name: '', region: '', city: '' })
   const [prefs, setPrefs] = useState<Prefs>(loadPrefs)
-  const [pushState, setPushState] = useState<string>(
-    typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
-  )
+  const [pushState, setPushState] = useState<string>('loading')
+  const isNativeApp = Capacitor.isNativePlatform()
+
+  useEffect(() => {
+    let active = true
+    void getNotificationPermission()
+      .then(permission => {
+        if (active) setPushState(permission)
+      })
+      .catch(error => {
+        console.error('Failed to check notification permission', error)
+        if (active) setPushState('unsupported')
+      })
+    return () => {
+      active = false
+    }
+  }, [])
 
   // Install app
   const { canUseManualA2HS, isInstalled, install } = useInstall()
@@ -170,18 +190,19 @@ export default function ProfileContent() {
   }
 
   const enablePush = async () => {
-    if (typeof Notification === 'undefined') return
     try {
-      const permission = await Notification.requestPermission()
+      const permission = await requestNotificationPermission()
       setPushState(permission)
       if (permission === 'granted') {
-        new Notification('2021familyforever', {
-          body: 'Arifa zimewashwa kwa kifaa hiki.',
-          icon: '/icons/icon-192x192.png',
-        })
+        await showDeviceNotification(
+          '2021familyforever',
+          'Arifa zimewashwa kwa kifaa hiki.',
+          `notification-permission-${Date.now()}`,
+        )
         toast.showToast('Arifa za push zimewashwa.')
       }
-    } catch {
+    } catch (error) {
+      console.error('Failed to enable device notifications', error)
       toast.showToast('Imeshindikana kuwasha arifa kwenye kifaa hiki.', 'error')
     }
   }
@@ -246,52 +267,54 @@ export default function ProfileContent() {
       </section>
 
       {/* Install + About */}
-      <section className="card p-5 sm:p-6 space-y-5" aria-label="Sakinisha na kuhusu programu">
-        <div>
-          <h2 className="font-semibold text-text">Sakinisha Programu</h2>
-          <p className="text-xs text-text-secondary mt-0.5">
-            {isInstalled
-              ? 'Programu hii imesakinishwa kwenye kifaa chako.'
-              : 'Weka 2021familyforever kwenye skrini yako ya nyumbani kwa ufikiaji wa haraka.'}
-          </p>
-          {isInstalled ? (
-            <p className="text-success text-sm mt-3">✓ Imesakinishwa</p>
-          ) : (
-            <>
-              <button
-                className="mt-3 w-full py-3.5 px-6 rounded-xl bg-primary text-white text-base font-bold shadow-lg shadow-primary/25 hover:bg-primary-600 active:scale-[0.98] transition flex items-center justify-center gap-2.5 disabled:opacity-60"
-                onClick={handleInstallClick}
-                disabled={installing}
-              >
-                {installing ? (
-                  <>
-                    <span className="inline-block w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" aria-hidden />
-                    Installing…
-                  </>
-                ) : (
-                  <>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" y1="15" y2="3" />
-                    </svg>
-                    Install
-                  </>
+      <section className="card p-5 sm:p-6 space-y-5" aria-label="Kuhusu programu">
+        {!isNativeApp && (
+          <div>
+            <h2 className="font-semibold text-text">Sakinisha Programu</h2>
+            <p className="text-xs text-text-secondary mt-0.5">
+              {isInstalled
+                ? 'Programu hii imesakinishwa kwenye kifaa chako.'
+                : 'Weka 2021familyforever kwenye skrini yako ya nyumbani kwa ufikiaji wa haraka.'}
+            </p>
+            {isInstalled ? (
+              <p className="text-success text-sm mt-3">✓ Imesakinishwa</p>
+            ) : (
+              <>
+                <button
+                  className="mt-3 w-full py-3.5 px-6 rounded-xl bg-primary text-white text-base font-bold shadow-lg shadow-primary/25 hover:bg-primary-600 active:scale-[0.98] transition flex items-center justify-center gap-2.5 disabled:opacity-60"
+                  onClick={handleInstallClick}
+                  disabled={installing}
+                >
+                  {installing ? (
+                    <>
+                      <span className="inline-block w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" aria-hidden />
+                      Installing…
+                    </>
+                  ) : (
+                    <>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" y2="3" />
+                      </svg>
+                      Install
+                    </>
+                  )}
+                </button>
+                {showIosGuide && canUseManualA2HS && (
+                  <div className="mt-3 p-4 bg-primary-50 rounded-xl border border-primary/10">
+                    <p className="text-xs font-medium text-primary mb-2">Ongeza kwenye Skrini ya Nyumbani (Share → Add to Home Screen):</p>
+                    <ol className="list-decimal list-inside text-[11px] text-text-secondary space-y-1">
+                      <li>Bonye kwenye menyu ya kivinjari (Share).</li>
+                      <li>Chagua “Add to Home Screen”.</li>
+                      <li>Thibitisha na “Add”.</li>
+                    </ol>
+                  </div>
                 )}
-              </button>
-              {showIosGuide && canUseManualA2HS && (
-                <div className="mt-3 p-4 bg-primary-50 rounded-xl border border-primary/10">
-                  <p className="text-xs font-medium text-primary mb-2">Ongeza kwenye Skrini ya Nyumbani (Share → Add to Home Screen):</p>
-                  <ol className="list-decimal list-inside text-[11px] text-text-secondary space-y-1">
-                    <li>Bonye kwenye menyu ya kivinjari (Share).</li>
-                    <li>Chagua “Add to Home Screen”.</li>
-                    <li>Thibitisha na “Add”.</li>
-                  </ol>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+              </>
+            )}
+          </div>
+        )}
 
         <div className="pt-4 border-t border-border-light">
           <h2 className="font-semibold text-text">Kuhusu 2021familyforever</h2>
@@ -381,13 +404,17 @@ export default function ProfileContent() {
             <p className="text-sm font-medium text-text">Arifa za Push</p>
             <p className="text-xs text-text-secondary mt-0.5">
               {pushState === 'granted'
-                ? 'Imewashwa kwenye kifaa hiki.'
+                ? 'Imewashwa. Arifa za moja kwa moja huonekana wakati programu iko wazi.'
                 : pushState === 'denied'
-                  ? 'Imezuiwa katika Mpangilio ya kivinjari.'
-                  : 'Pata arifa hata programu ikiwa imefungwa.'}
+                  ? 'Imezuiwa kwenye mipangilio ya kifaa hiki.'
+                  : pushState === 'loading'
+                    ? 'Inakagua ruhusa za arifa…'
+                    : pushState === 'unsupported'
+                      ? 'Arifa za kifaa hiki hazitumiki hapa.'
+                      : 'Washa arifa za moja kwa moja wakati programu iko wazi.'}
             </p>
           </div>
-          {pushState !== 'granted' && (
+          {pushState !== 'granted' && pushState !== 'loading' && pushState !== 'unsupported' && (
             <button className="btn btn-secondary btn-sm" onClick={enablePush}>
               Washa Arifa
             </button>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import type { Notification } from '../types'
 import { getUnreadAnnouncementCount, getUnreadCount, subscribeToNotifications } from '../services/notifications'
+import { showRealtimeNotification } from '../services/device-notifications'
 
 /**
  * Realtime unread notification badge.
@@ -31,6 +32,9 @@ export function useNotifications(userId: string | undefined) {
         setLatest(notification)
         setUnreadCount(c => c + 1)
         if (notification.type === 'ANNOUNCEMENT') setUnreadAnnouncementCount(c => c + 1)
+        void showRealtimeNotification(notification).catch(error => {
+          console.error('Failed to display notification on this device', error)
+        })
       },
       () => void refresh()
     )
