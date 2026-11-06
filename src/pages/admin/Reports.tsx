@@ -104,11 +104,6 @@ export default function AdminReports() {
     { label: 'Imelipwa kwa sehemu', value: analytics.partial, color: STATUS_COLORS.partial },
     { label: 'Haijalipwa', value: analytics.unpaid, color: STATUS_COLORS.unpaid },
   ]
-  const financialSlices: ChartSlice[] = [
-    { label: 'Imekusanywa', value: analytics.collected, color: STATUS_COLORS.completed },
-    { label: 'Salio', value: analytics.outstanding, color: '#b7cdbb' },
-  ]
-
   const paymentPoints = useMemo<ChartPoint[]>(() => rows
     .map(row => ({ label: row.profile?.full_name ?? 'Mwanachama', value: Number(row.total_paid) }))
     .sort((a, b) => b.value - a.value), [rows])
@@ -224,10 +219,6 @@ export default function AdminReports() {
                 <article className="card min-w-0 p-4 sm:p-6">
                   <h2 className="section-title mb-5">Hali ya malipo ya wanachama</h2>
                   <DistributionChart slices={statusSlices} />
-                </article>
-                <article className="card min-w-0 p-4 sm:p-6">
-                  <h2 className="section-title mb-5">Fedha zilizokusanywa na salio</h2>
-                  <DistributionChart slices={financialSlices} formatValue={formatTZS} />
                 </article>
                 <article className="card min-w-0 p-4 sm:p-6">
                   <h2 className="section-title mb-2">Maendeleo ya makusanyo</h2>
