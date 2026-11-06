@@ -112,6 +112,10 @@ the Cloudflare project, set it to `npm run deploy:version`. The checked-in
 Worker entry point and `ASSETS` binding allow that command to load the built
 app instead of failing because there is no Worker script. Both npm scripts use
 the project's pinned Wrangler version.
+
+After changing Cloudflare build settings, deploy the latest commit from the
+configured Git branch. A manual deployment of an older commit will not include
+the Wrangler configuration or Worker entry point added for static assets.
 Node `22` is pinned by `.nvmrc`. `public/_headers` is copied into `dist/` so
 the service worker and web manifest are refreshed promptly after deployment.
 
