@@ -14,6 +14,7 @@ const adminNav = [
 // Sidebar-only items (reachable on mobile via "More")
 const moreNav = [
   { to: '/admin/reports', label: 'Ripoti', icon: ReportsIcon, end: false },
+  { to: '/admin/activity', label: 'Kumbukumbu', icon: ActivityIcon, end: false },
   { to: '/admin/announcements', label: 'Taarifa', icon: AnnouncementsIcon, end: false },
   { to: '/admin/profile', label: 'Wasifu', icon: ProfileIcon, end: false },
 ]
@@ -24,6 +25,7 @@ const titleMap: Record<string, string> = {
   '/admin/contributions': 'Michango',
   '/admin/payments': 'Malipo',
   '/admin/reports': 'Ripoti',
+  '/admin/activity': 'Kumbukumbu za shughuli',
   '/admin/announcements': 'Taarifa',
   '/admin/profile': 'Wasifu',
 }
@@ -189,6 +191,13 @@ function ReportsIcon() {
   return (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 19V5m0 14h16M8 15l3-4 3 2 5-7" />
+    </svg>
+  )
+}
+function ActivityIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12h4l3-8 4 16 3-8h4" />
     </svg>
   )
 }

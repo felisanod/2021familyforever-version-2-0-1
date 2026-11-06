@@ -25,9 +25,11 @@ cumulative confirmed payments, so partial payments are included and a member
 is fully paid once their total meets the required amount. Report access is
 protected by route roles and Supabase row-level security. Application visit
 and login audit records are stored in the `application_activity` table, which
-only active admins can read. Login credentials are never written to the audit
-table; failed phone identifiers are masked. Login attempts are limited to
-eight attempts per account and IP address per 15-minute window.
+only active admins can read. Admins can review and filter those records at
+`/admin/activity`, including recent successful and failed logins and recent
+member activity. Login credentials are never written to the audit table;
+failed phone identifiers are masked. Login attempts are limited to eight
+attempts per account and IP address per 15-minute window.
 
 Before deploying the updated website, apply the current `supabase-schema.sql`
 in the Supabase SQL Editor and deploy the login audit function:

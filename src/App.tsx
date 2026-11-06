@@ -27,6 +27,7 @@ const AdminPayments = lazy(() => import('./pages/admin/Payments'))
 const AdminAnnouncements = lazy(() => import('./pages/admin/Announcements'))
 const AdminProfile = lazy(() => import('./pages/admin/Profile'))
 const AdminReports = lazy(() => import('./pages/admin/Reports'))
+const AdminActivityLogs = lazy(() => import('./pages/admin/ActivityLogs'))
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
   const { user, loading } = useAuth()
@@ -120,6 +121,7 @@ function AppRoutes() {
           <Route path="announcements" element={<AdminAnnouncements />} />
           <Route path="profile" element={<AdminProfile />} />
           <Route path="reports" element={<AdminReports />} />
+          <Route path="activity" element={<AdminActivityLogs />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
