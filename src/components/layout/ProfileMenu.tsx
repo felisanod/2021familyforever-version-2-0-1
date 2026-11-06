@@ -33,7 +33,7 @@ export default function ProfileMenu({ onSwitchInterface }: Props) {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Menyu ya akaunti"
-        className="w-9 h-9 rounded-full bg-primary-50 text-primary font-semibold text-xs flex items-center justify-center hover:bg-primary/10 transition-colors"
+        className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-50 text-xs font-semibold text-primary shadow-neu-inset-sm transition-colors hover:bg-primary/10"
       >
         {user?.profile_picture ? (
           <img src={user.profile_picture} alt="" className="w-full h-full rounded-full object-cover" />
@@ -43,7 +43,7 @@ export default function ProfileMenu({ onSwitchInterface }: Props) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-11 w-52 card shadow-lg py-1.5 z-50" role="menu">
+        <div className="card absolute right-0 top-11 z-50 w-52 py-1.5" role="menu">
           <div className="px-3.5 py-2 border-b border-border-light">
             <p className="text-sm font-semibold text-text truncate">{user?.full_name}</p>
             <p className="text-xs text-text-secondary">{user?.phone_number}</p>

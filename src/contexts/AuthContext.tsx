@@ -132,28 +132,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (phone: string, password: string) => {
     try {
       loginInProgressRef.current = true
-
-      // New accounts use the current domain; older seeded accounts still use
-      // the legacy one — try both before giving up.
-      let { data, error } = await supabase.auth.signInWithPassword({
-        email: phoneToEmail(phone),
-        password,
-      })
-      if ((error || !data.user)) {
-        const retry = await supabase.auth.signInWithPassword({
-          email: legacyPhoneToEmail(phone),
-          password,
-        })
-        data = retry.data
-        error = retry.error
-      }
-
-      if (error || !data.user) {
+      const { data, error } = await supabase.functions.invoke<{
+        session?: { access_token: string; refresh_token: string }
+      }>('login-with-audit', { body: { phone, password } })
+      if (error || !data?.session) {
         loginInProgressRef.current = false
         return { error: 'Namba ya simu au neno la siri si sahihi. Tafadhali jaribu tena.' }
       }
 
-      const result = await applyProfile(data.user.id)
+      const { data: sessionData, error: sessionError } = await supabase.auth.setSession(data.session)
+      if (sessionError || !sessionData.user) {
+        loginInProgressRef.current = false
+        console.error('Authenticated session could not be established', sessionError)
+        return { error: 'Imeshindikana kukamilisha kuingia. Tafadhali jaribu tena.' }
+      }
+
+      const result = await applyProfile(sessionData.user.id)
       loginInProgressRef.current = false
       return result
     } catch {

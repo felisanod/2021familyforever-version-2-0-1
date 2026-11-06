@@ -281,7 +281,7 @@ export default function ProfileContent() {
             ) : (
               <>
                 <button
-                  className="mt-3 w-full py-3.5 px-6 rounded-xl bg-primary text-white text-base font-bold shadow-lg shadow-primary/25 hover:bg-primary-600 active:scale-[0.98] transition flex items-center justify-center gap-2.5 disabled:opacity-60"
+                  className="btn btn-primary mt-3 w-full rounded-xl px-6 py-3.5 text-base font-bold active:scale-[0.98] disabled:opacity-60"
                   onClick={handleInstallClick}
                   disabled={installing}
                 >

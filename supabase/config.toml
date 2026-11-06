@@ -1,0 +1,2 @@
+[functions.login-with-audit]
+verify_jwt = false

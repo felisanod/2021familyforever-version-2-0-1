@@ -65,25 +65,60 @@ export async function getContribution(contributionId: string) {
 
 export type ContributionMemberRow = MemberContributionStatus & {
   profile: Pick<Profile, 'full_name' | 'phone_number' | 'region' | 'city' | 'account_status'> | null
+  payment_dates: string[]
+}
+
+export async function listReportContributions(): Promise<{ contributions: Contribution[]; error: unknown }> {
+  const { data, error } = await supabase
+    .from('contributions')
+    .select('*')
+    .order('created_at', { ascending: false })
+  return { contributions: (data ?? []) as Contribution[], error }
 }
 
 /** Per-member payment summaries for one contribution, joined with profiles. */
 export async function getContributionMemberStatuses(contributionId: string): Promise<{ rows: ContributionMemberRow[]; error: unknown }> {
-  const { data, error } = await supabase
-    .from('v_member_contribution_status')
-    .select('*')
-    .eq('contribution_id', contributionId)
+  const statuses: MemberContributionStatus[] = []
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await supabase
+      .from('v_member_contribution_status')
+      .select('*')
+      .eq('contribution_id', contributionId)
+      .range(from, from + 999)
+    if (error) return { rows: [], error }
+    const page = (data ?? []) as unknown as MemberContributionStatus[]
+    statuses.push(...page)
+    if (page.length < 1000) break
+  }
 
-  if (error || !data || data.length === 0) return { rows: [] as ContributionMemberRow[], error }
+  const memberIds = [...new Set(statuses.map(row => row.member_id))]
+  if (memberIds.length === 0) return { rows: [], error: null }
 
-  const memberIds = [...new Set((data as MemberContributionStatus[]).map(r => r.member_id))]
-  const { data: profiles } = await supabase
+  const { data: profiles, error: profileError } = await supabase
     .from('profiles')
     .select('user_id, full_name, phone_number, region, city, account_status')
     .in('user_id', memberIds)
+  if (profileError) return { rows: [], error: profileError }
 
   const profileMap = new Map((profiles ?? []).map(p => [p.user_id, p]))
-  const rows = (data as MemberContributionStatus[])
+  const paymentDates = new Map<string, string[]>()
+  for (let from = 0; ; from += 1000) {
+    const { data: payments, error: paymentError } = await supabase
+      .from('payments')
+      .select('member_id, payment_date, created_at')
+      .eq('contribution_id', contributionId)
+      .eq('payment_status', 'PAID')
+      .range(from, from + 999)
+    if (paymentError) return { rows: [], error: paymentError }
+    for (const payment of payments ?? []) {
+      const dates = paymentDates.get(payment.member_id) ?? []
+      dates.push(payment.payment_date ?? payment.created_at.slice(0, 10))
+      paymentDates.set(payment.member_id, dates)
+    }
+    if ((payments ?? []).length < 1000) break
+  }
+
+  const rows = statuses
     .map(r => ({
       ...r,
       profile: profileMap.get(r.member_id)
@@ -95,6 +130,7 @@ export async function getContributionMemberStatuses(contributionId: string): Pro
             account_status: profileMap.get(r.member_id)!.account_status,
           }
         : null,
+      payment_dates: (paymentDates.get(r.member_id) ?? []).sort(),
     }))
     .sort((a, b) => (a.profile?.full_name ?? '').localeCompare(b.profile?.full_name ?? ''))
 

@@ -165,7 +165,7 @@ export default function AdminPayments() {
               <button
                 key={r.member_id}
                 onClick={() => setSelectedMember(r)}
-                className={`card p-4 text-left transition-shadow hover:shadow-md ${
+                className={`card p-4 text-left transition-shadow ${
                   selectedMember?.member_id === r.member_id ? 'ring-2 ring-primary' : ''
                 }`}
               >

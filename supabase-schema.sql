@@ -669,3 +669,151 @@ begin
     end;
   end loop;
 end $$;
+
+-- ============================================================
+-- APPLICATION ACCESS AUDIT
+-- Login attempts are written only by the login-with-audit Edge Function
+-- using the service role. Visits are written through an auth-bound RPC.
+-- ============================================================
+create table if not exists public.application_activity (
+  activity_id uuid primary key default gen_random_uuid(),
+  actor_id uuid references auth.users on delete set null,
+  activity_type text not null check (activity_type in ('LOGIN_SUCCESS', 'LOGIN_FAILED', 'APP_VISIT')),
+  login_identifier text,
+  ip_address text,
+  user_agent text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_application_activity_created
+  on public.application_activity (created_at desc);
+create index if not exists idx_application_activity_actor_created
+  on public.application_activity (actor_id, created_at desc);
+create index if not exists idx_application_activity_type_created
+  on public.application_activity (activity_type, created_at desc);
+
+create or replace view public.v_application_last_active
+with (security_invoker = true)
+as
+select actor_id, max(created_at) as last_active_at
+from public.application_activity
+where actor_id is not null
+group by actor_id;
+
+grant select on public.v_application_last_active to authenticated;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.application_activity;
+exception when duplicate_object then
+  null;
+end $$;
+
+alter table public.application_activity enable row level security;
+drop policy if exists "application_activity_admin_read" on public.application_activity;
+create policy "application_activity_admin_read"
+  on public.application_activity for select
+  to authenticated
+  using (public.is_admin());
+
+revoke all on public.application_activity from public, anon, authenticated;
+grant select on public.application_activity to authenticated;
+grant insert on public.application_activity to service_role;
+
+create or replace function public.record_application_visit(p_user_agent text default null)
+returns void
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  if auth.uid() is null or not exists (
+    select 1 from public.profiles
+    where user_id = auth.uid() and account_status = 'ACTIVE'
+  ) then
+    raise exception 'An active signed-in account is required';
+  end if;
+
+  insert into public.application_activity (actor_id, activity_type, user_agent)
+  values (auth.uid(), 'APP_VISIT', left(p_user_agent, 512));
+end;
+$$;
+
+revoke all on function public.record_application_visit(text) from public, anon;
+grant execute on function public.record_application_visit(text) to authenticated;
+
+-- A small service-role-only throttle protects the public sign-in endpoint.
+create table if not exists public.login_rate_limits (
+  bucket_key text primary key,
+  window_started_at timestamptz not null default now(),
+  attempt_count integer not null default 0 check (attempt_count >= 0)
+);
+
+create index if not exists idx_login_rate_limits_window
+  on public.login_rate_limits (window_started_at);
+
+alter table public.login_rate_limits enable row level security;
+revoke all on public.login_rate_limits from public, anon, authenticated;
+
+create or replace function public.consume_login_rate_limit(p_keys text[])
+returns boolean
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_key text;
+  v_started_at timestamptz;
+  v_count integer;
+begin
+  if p_keys is null then
+    raise exception 'Invalid rate-limit key';
+  end if;
+
+  delete from public.login_rate_limits
+    where window_started_at < now() - interval '1 day';
+
+  if cardinality(p_keys) = 0 or cardinality(p_keys) > 2
+    or exists (
+      select 1 from unnest(p_keys) as keys(value)
+      where value is null or btrim(value) = '' or length(value) > 128
+    ) then
+    raise exception 'Invalid rate-limit key';
+  end if;
+
+  for v_key in select distinct value from unnest(p_keys) as keys(value) order by value loop
+    perform pg_advisory_xact_lock(hashtextextended(v_key, 0));
+  end loop;
+
+  for v_key in select distinct value from unnest(p_keys) as keys(value) order by value loop
+    select window_started_at, attempt_count
+      into v_started_at, v_count
+      from public.login_rate_limits
+      where bucket_key = v_key
+      for update;
+
+    if found and v_started_at > now() - interval '15 minutes' and v_count >= 8 then
+      return false;
+    end if;
+  end loop;
+
+  for v_key in select distinct value from unnest(p_keys) as keys(value) order by value loop
+    insert into public.login_rate_limits (bucket_key, window_started_at, attempt_count)
+      values (v_key, now(), 1)
+    on conflict (bucket_key) do update
+      set window_started_at = case
+            when public.login_rate_limits.window_started_at <= now() - interval '15 minutes' then now()
+            else public.login_rate_limits.window_started_at
+          end,
+          attempt_count = case
+            when public.login_rate_limits.window_started_at <= now() - interval '15 minutes' then 1
+            else public.login_rate_limits.attempt_count + 1
+          end;
+  end loop;
+
+  return true;
+end;
+$$;
+
+revoke all on function public.consume_login_rate_limit(text[]) from public, anon, authenticated;
+grant execute on function public.consume_login_rate_limit(text[]) to service_role;

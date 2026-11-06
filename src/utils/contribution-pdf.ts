@@ -59,16 +59,18 @@ export function exportContributionPdf(
   }
 
   const infoPairs: [string, string][] = [
-    ['Kiasi Kinachohitajika', money(contribution.amount)],
+    ['Tarehe ya Kutengenezwa', formatDateStr(contribution.created_at)],
     ['Tarehe ya Kufunguka', formatDateStr(contribution.opening_date)],
     ['Tarehe ya Kufunga', formatDateStr(contribution.due_date)],
     ['Hali', contribution.status === 'OPEN' ? 'Wazi' : 'Imefungwa'],
-    ['Wanachama Wote', String(contribution.total_members)],
-    ['WALOMALIZA', String(contribution.completed_members)],
-    ['WALOMALIZA Kiasi', String(contribution.partial_members)],
-    ['Hawajalipa / Wanasubiri', String(contribution.unpaid_members + contribution.pending_members)],
-    ['Jumla Yaliyokusanywa', money(contribution.total_collected)],
-    ['Ukamilifu', `${contribution.completion_percent}%`],
+    ['Wanachama Wanaotarajiwa', String(rows.length)],
+    ['Wamelipa Kikamilifu', String(rows.filter(row => row.payment_status === 'COMPLETED').length)],
+    ['Wamelipa Sehemu', String(rows.filter(row => row.payment_status === 'PARTIAL').length)],
+    ['Hawajalipa', String(rows.filter(row => row.total_paid <= 0).length)],
+    ['Jumla Inayotarajiwa', money(rows.reduce((sum, row) => sum + Number(row.required_amount), 0))],
+    ['Jumla Yaliyokusanywa', money(rows.reduce((sum, row) => sum + Number(row.total_paid), 0))],
+    ['Salio Linalodaiwa', money(rows.reduce((sum, row) => sum + Number(row.remaining_amount), 0))],
+    ['Maendeleo ya Makusanyo', `${collectionProgress(rows)}%`],
   ]
 
   autoTable(doc, {
@@ -97,14 +99,14 @@ export function exportContributionPdf(
     r.overpaid_amount > 0 ? `${money(r.overpaid_amount)} zaidi` : '—',
     labelFor(r.payment_status),
     `${r.progress_percent}%`,
-    r.last_payment_date ? formatDateStr(r.last_payment_date) : '—',
+    r.payment_dates.length > 0 ? r.payment_dates.map(formatDateStr).join(', ') : '—',
   ])
 
   autoTable(doc, {
     startY: lastY + 24,
     head: [[
       'Mwanachama', 'Namba ya Simu', 'Mkoa/Mji', 'Kinachohitajika', 'Kilicholipwa',
-      'Kilichobaki', 'ILIZIDI', 'Hali', 'Maendeleo', 'Malipo ya Mwisho',
+      'Kilichobaki', 'ILIZIDI', 'Hali', 'Maendeleo', 'Tarehe za Malipo',
     ]],
     body: tableRows,
     theme: 'grid',
@@ -117,7 +119,7 @@ export function exportContributionPdf(
       5: { halign: 'right' },
       6: { halign: 'right' },
       8: { halign: 'center' },
-      9: { halign: 'center' },
+      9: { cellWidth: 100 },
     },
     margin: { left: 40, right: 40 },
     didParseCell(data) {
@@ -146,6 +148,12 @@ export function exportContributionPdf(
 
   const safeName = contribution.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase()
   doc.save(`${safeName}-ripoti.pdf`)
+}
+
+function collectionProgress(rows: ContributionMemberRow[]): number {
+  const expected = rows.reduce((sum, row) => sum + Number(row.required_amount), 0)
+  const collected = rows.reduce((sum, row) => sum + Number(row.total_paid), 0)
+  return expected > 0 ? Math.min(100, Math.round((collected / expected) * 100)) : 0
 }
 
 function labelFor(status: string): string {

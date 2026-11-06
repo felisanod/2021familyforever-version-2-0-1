@@ -4,11 +4,11 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase, type Announcement, type Notification, type Profile } from '../../types'
 import { listMemberDirectory } from '../../services/members'
 import { useRealtimeRefresh } from '../../hooks/useRealtimeRefresh'
-import { greetingForHour, formatDateShort, timeAgo, initialsOf } from '../../utils/format'
+import { greetingForHour, formatDateShort, formatTZS, timeAgo, initialsOf } from '../../utils/format'
 import EmptyState from '../../components/ui/EmptyState'
 import Loading from '../../components/ui/Loading'
 
-type StatusCounts = { paid: number; pending: number; unpaid: number }
+type StatusCounts = { paid: number; pending: number; unpaid: number; contributed: number; expected: number; completionRate: number }
 
 export default function MemberHome() {
   const { user } = useAuth()
@@ -24,7 +24,7 @@ export default function MemberHome() {
     const [statusRes, annRes, notifRes, dirRes] = await Promise.all([
       supabase
         .from('v_member_contribution_status')
-        .select('payment_status')
+        .select('payment_status, total_paid, required_amount')
         .eq('member_id', user.user_id),
       supabase
         .from('announcements')
@@ -40,11 +40,15 @@ export default function MemberHome() {
       listMemberDirectory(),
     ])
 
-    const rows = (statusRes.data ?? []) as { payment_status: string }[]
+    const rows = (statusRes.data ?? []) as { payment_status: string; total_paid: number; required_amount: number }[]
+    const completed = rows.filter(r => r.payment_status === 'COMPLETED').length
     setCounts({
-      paid: rows.filter(r => r.payment_status === 'COMPLETED').length,
+      paid: completed,
       pending: rows.filter(r => r.payment_status === 'PARTIAL' || r.payment_status === 'PENDING').length,
       unpaid: rows.filter(r => r.payment_status === 'UNPAID').length,
+      contributed: rows.reduce((sum, row) => sum + Number(row.total_paid), 0),
+      expected: rows.reduce((sum, row) => sum + Number(row.required_amount), 0),
+      completionRate: rows.length ? Math.round((completed / rows.length) * 100) : 0,
     })
     setAnnouncements((annRes.data ?? []) as Announcement[])
     setActivity((notifRes.data ?? []) as Notification[])
@@ -75,15 +79,25 @@ export default function MemberHome() {
       </div>
 
       {/* Contribution summary */}
-      <section aria-label="Contribution summary">
+      <section aria-label="Muhtasari wa michango">
         {loading ? (
           <Loading />
         ) : (
-          <div className="grid grid-cols-3 gap-3 sm:gap-4">
+          <>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
             <StatCard label="Imekamilika" value={counts?.paid ?? 0} color="success" mark="✓" />
             <StatCard label="Inaendelea" value={counts?.pending ?? 0} color="warning" mark="◔" />
             <StatCard label="Haijalipwa" value={counts?.unpaid ?? 0} color="error" mark="✕" />
+            <StatCard label="Kiwango cha ukamilifu" value={counts?.completionRate ?? 0} color="success" mark="%" />
           </div>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/10 bg-primary-50 px-4 py-3">
+            <p className="text-sm text-text">
+              Umechangia <strong className="text-primary">{formatTZS(counts?.contributed ?? 0)}</strong>
+              <span className="text-text-secondary"> kati ya {formatTZS(counts?.expected ?? 0)} zinazotarajiwa</span>
+            </p>
+            <Link to="/reports" className="text-sm font-semibold text-primary hover:text-primary-600">Tazama ripoti →</Link>
+          </div>
+          </>
         )}
       </section>
 
@@ -104,7 +118,7 @@ export default function MemberHome() {
             {announcements.map(a => {
               const d = formatDateShort(a.published_at)
               return (
-                <Link key={a.announcement_id} to={`/updates?id=${a.announcement_id}`} className="card p-4 block hover:shadow-md transition-shadow">
+                <Link key={a.announcement_id} to={`/updates?id=${a.announcement_id}`} className="card block p-4 transition-shadow">
                   <div className="flex items-start gap-4">
                     <div className="shrink-0 w-12 text-center border-r border-border pr-3">
                       <p className="text-lg font-bold text-text leading-none">{d.day}</p>

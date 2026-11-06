@@ -2,16 +2,16 @@
  * Dynamic payment progress bar.
  * Color reflects payment state and updates automatically:
  *   0%        → gray
- *   1–49%     → red (warning)
- *   50–99%    → amber
+ *   1–49%     → soft green
+ *   50–99%    → medium green
  *   ≥100%     → green
  * The bar visually caps at 100% even when overpaid; the actual paid
  * amount is displayed separately by the caller.
  */
 export function progressColor(percent: number): { bar: string; text: string } {
   if (percent <= 0) return { bar: 'bg-border', text: 'text-text-secondary' }
-  if (percent < 50) return { bar: 'bg-error', text: 'text-error' }
-  if (percent < 100) return { bar: 'bg-warning', text: 'text-warning' }
+  if (percent < 50) return { bar: 'bg-progress-low', text: 'text-primary' }
+  if (percent < 100) return { bar: 'bg-progress-mid', text: 'text-primary' }
   return { bar: 'bg-success', text: 'text-success' }
 }
 
@@ -29,7 +29,7 @@ export default function PaymentProgressBar({
 
   return (
     <div>
-      <div className={`w-full ${height} bg-border-light rounded-full overflow-hidden`} role="progressbar" aria-valuenow={clamped} aria-valuemin={0} aria-valuemax={100}>
+      <div className={`progress-track w-full ${height} rounded-full overflow-hidden`} role="progressbar" aria-valuenow={clamped} aria-valuemin={0} aria-valuemax={100}>
         <div className={`${height} rounded-full transition-all duration-300 ${colors.bar}`} style={{ width: `${clamped}%` }} />
       </div>
       {showLabel && (

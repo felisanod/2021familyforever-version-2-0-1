@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { recordApplicationVisit } from './services/reports'
 import { ToastProvider } from './components/ui/Toast'
 import Loading from './components/ui/Loading'
 import OfflineIndicator from './components/ui/OfflineIndicator'
@@ -18,12 +19,14 @@ const MemberMembers = lazy(() => import('./pages/member/Members'))
 const MemberAnnouncements = lazy(() => import('./pages/member/Announcements'))
 const MemberNotifications = lazy(() => import('./pages/member/Notifications'))
 const MemberProfile = lazy(() => import('./pages/member/Profile'))
+const MemberReports = lazy(() => import('./pages/member/Reports'))
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'))
 const AdminMembers = lazy(() => import('./pages/admin/Members'))
 const AdminContributions = lazy(() => import('./pages/admin/Contributions'))
 const AdminPayments = lazy(() => import('./pages/admin/Payments'))
 const AdminAnnouncements = lazy(() => import('./pages/admin/Announcements'))
 const AdminProfile = lazy(() => import('./pages/admin/Profile'))
+const AdminReports = lazy(() => import('./pages/admin/Reports'))
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
   const { user, loading } = useAuth()
@@ -77,6 +80,22 @@ function NativeNotificationNavigation() {
   return null
 }
 
+function ApplicationVisitTracker() {
+  const { user } = useAuth()
+  const userId = user?.user_id
+
+  useEffect(() => {
+    if (!userId) return
+    void recordApplicationVisit().then(({ error }) => {
+      if (error) throw error
+    }).catch(error => {
+      console.error('Failed to record application visit', error)
+    })
+  }, [userId])
+
+  return null
+}
+
 function AppRoutes() {
   return (
     <Suspense fallback={<Loading full />}>
@@ -91,6 +110,7 @@ function AppRoutes() {
           <Route path="announcements" element={<Navigate to="/updates" replace />} />
           <Route path="notifications" element={<MemberNotifications />} />
           <Route path="profile" element={<MemberProfile />} />
+          <Route path="reports" element={<MemberReports />} />
         </Route>
         <Route path="/admin" element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminLayout /></ProtectedRoute>}>
           <Route index element={<AdminDashboard />} />
@@ -99,6 +119,7 @@ function AppRoutes() {
           <Route path="payments" element={<AdminPayments />} />
           <Route path="announcements" element={<AdminAnnouncements />} />
           <Route path="profile" element={<AdminProfile />} />
+          <Route path="reports" element={<AdminReports />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -112,6 +133,7 @@ export default function App() {
       <NativeNotificationNavigation />
       <AuthProvider>
         <ToastProvider>
+          <ApplicationVisitTracker />
           <OfflineIndicator />
           <AppRoutes />
           {!Capacitor.isNativePlatform() && <InstallPrompt />}

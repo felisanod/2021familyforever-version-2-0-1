@@ -123,9 +123,7 @@ export default function Login() {
           /* ---------- Login ---------- */
           <>
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-white font-bold text-xl">21</span>
-              </div>
+              <img src="/icons/icon-192x192.png" alt="" className="mx-auto mb-4 h-16 w-16 rounded-2xl object-cover shadow-neu-sm" />
               <h1 className="text-2xl font-bold text-text">2021familyforever</h1>
               <p className="text-text-secondary text-sm mt-1">Ingia kwenye akaunti yako</p>
             </div>
@@ -174,9 +172,7 @@ export default function Login() {
           /* ---------- Registration ---------- */
           <>
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-white font-bold text-xl">21</span>
-              </div>
+              <img src="/icons/icon-192x192.png" alt="" className="mx-auto mb-4 h-16 w-16 rounded-2xl object-cover shadow-neu-sm" />
               <h1 className="text-2xl font-bold text-text">Jisajili</h1>
               <p className="text-text-secondary text-sm mt-1">Tengeneza akaunti yako ya mwanachama</p>
             </div>

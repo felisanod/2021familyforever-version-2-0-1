@@ -15,9 +15,39 @@ npm run build      # production build + service worker
 npm run preview    # preview the production build on 0.0.0.0:4173
 ```
 
+## Reports and access audit
+
+The member reports page reads each signed-in member's own contribution status
+and payments. Admins select one contribution to see its member payment
+statuses, cumulative payments, balances, collection progress, charts, and
+PDF export; report data refreshes when payments change. Statuses are based on
+cumulative confirmed payments, so partial payments are included and a member
+is fully paid once their total meets the required amount. Report access is
+protected by route roles and Supabase row-level security. Application visit
+and login audit records are stored in the `application_activity` table, which
+only active admins can read. Login credentials are never written to the audit
+table; failed phone identifiers are masked. Login attempts are limited to
+eight attempts per account and IP address per 15-minute window.
+
+Before deploying the updated website, apply the current `supabase-schema.sql`
+in the Supabase SQL Editor and deploy the login audit function:
+
+```bash
+npx supabase login
+npx supabase link --project-ref khhntxdmmqqjsdnlqqpo
+npx supabase functions deploy login-with-audit
+```
+
+Deploy the Edge Function before the website update because login attempts are
+authenticated and audited by that function. It uses Supabase's built-in
+`SUPABASE_URL`, `SUPABASE_ANON_KEY` (or `SUPABASE_PUBLISHABLE_KEY`), and
+`SUPABASE_SERVICE_ROLE_KEY` function secrets. The service-role key remains
+server-side and must never be added to the website environment or source.
+
 ## Android app
 
-The Android app is a Capacitor wrapper around the production web build. Install
+The Android app is a Capacitor wrapper that loads the live website at
+`https://2021familyforever-version-2-0-1.felisanod.workers.dev/`. Install
 Android Studio, the Android SDK, and JDK 21, then run:
 
 ```bash
@@ -139,8 +169,10 @@ Security model:
 ## Frontend
 
 - React 19 + TypeScript + Vite + Tailwind CSS v4
-- Warm light editorial design (indigo primary `#4F46E5`, coral secondary `#F97316`,
-  off-white background `#F7F8FC`) — no dark/glass styling
+- Responsive green-and-white neumorphic theme with soft raised/inset surfaces,
+  accessible focus states, and matching contribution chart colors
+- Mobile app shell with safe-area-aware Android-style app bars, touch-sized
+  bottom navigation, standalone PWA metadata, and compact responsive charts
 - Desktop sidebar layout, mobile bottom navigation (+ compact "More" menu for admins)
 - Realtime notification badge, deep-linked notification center, mark-all-as-read
 - Install prompt (real browser mechanism, dismiss remembered), offline indicator,

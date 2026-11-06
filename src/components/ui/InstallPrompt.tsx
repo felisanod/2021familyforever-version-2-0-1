@@ -50,7 +50,7 @@ export default function InstallPrompt() {
 
   return (
     <div className="fixed bottom-20 sm:bottom-6 right-4 left-4 sm:left-auto sm:max-w-xs z-[85]" role="dialog" aria-label="Sakinisha programu">
-      <div className="card p-4 shadow-lg border-primary/10">
+      <div className="card border-primary/10 p-4">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shrink-0">
             <span className="text-white font-bold text-sm">21</span>

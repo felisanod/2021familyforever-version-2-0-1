@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import ProfileMenu from './ProfileMenu'
@@ -13,6 +13,7 @@ const adminNav = [
 
 // Sidebar-only items (reachable on mobile via "More")
 const moreNav = [
+  { to: '/admin/reports', label: 'Ripoti', icon: ReportsIcon, end: false },
   { to: '/admin/announcements', label: 'Taarifa', icon: AnnouncementsIcon, end: false },
   { to: '/admin/profile', label: 'Wasifu', icon: ProfileIcon, end: false },
 ]
@@ -22,6 +23,7 @@ const titleMap: Record<string, string> = {
   '/admin/members': 'Wanachama',
   '/admin/contributions': 'Michango',
   '/admin/payments': 'Malipo',
+  '/admin/reports': 'Ripoti',
   '/admin/announcements': 'Taarifa',
   '/admin/profile': 'Wasifu',
 }
@@ -30,16 +32,24 @@ export default function AdminLayout() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const mainRef = useRef<HTMLElement>(null)
   const [moreOpen, setMoreOpen] = useState(false)
 
+  useEffect(() => {
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      mainRef.current?.scrollTo({
+        top: 0,
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      })
+    }
+  }, [location.pathname])
+
   return (
-    <div className="h-screen flex bg-background">
+    <div className="app-shell flex bg-background">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-56 bg-surface shadow-neu-sm flex-col shrink-0">
-        <div className="h-14 flex items-center gap-3 px-4 shadow-neu-inset-sm">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center" style={{ boxShadow: 'var(--shadow-neu-sm)' }}>
-            <span className="text-white font-bold text-sm">21</span>
-          </div>
+      <aside className="neu-surface hidden w-56 flex-col shrink-0 md:flex">
+        <div className="h-14 flex items-center gap-3 px-4 border-b border-border-light">
+          <img className="h-9 w-9 rounded-lg object-cover" src="/icons/icon-192x192.png" alt="" />
           <span className="font-semibold text-sm text-text">2021familyforever</span>
         </div>
         <nav className="flex-1 p-2 space-y-1 overflow-y-auto" aria-label="Urambazaji wa ">
@@ -55,28 +65,30 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
-        <header className="bg-surface px-4 h-14 flex items-center justify-between gap-3 shadow-neu-inset-sm">
+      <div className="app-shell flex min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="mobile-app-bar neu-surface relative z-10 flex items-center justify-between gap-3 border-b border-border-light px-4">
           <h2 className="font-semibold text-text truncate">{titleMap[location.pathname] ?? 'Dashibodi'}</h2>
           <div className="flex items-center gap-2">
             <span className="text-xs text-text-secondary hidden lg:block">{user?.full_name}</span>
             <ProfileMenu onSwitchInterface={() => navigate('/')} />
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 md:pb-6">
-          <Outlet />
+        <main ref={mainRef} className="app-main flex-1 overflow-y-auto p-4 pb-24 sm:p-6 md:pb-6">
+          <div key={location.pathname} className="screen-enter min-h-full">
+            <Outlet />
+          </div>
         </main>
       </div>
 
       {/* Mobile bottom navigation with compact More menu */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface h-16 flex items-center justify-around z-50 shadow-neu-inset-sm" aria-label="Urambazaji wa ">
+      <nav className="mobile-bottom-nav neu-surface fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-border-light bg-surface/95 backdrop-blur md:hidden" aria-label="Urambazaji wa ">
         {adminNav.map(item => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.end}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-1 rounded-xl p-2 text-[11px] font-medium min-w-[64px] transition-all duration-150 hover:-translate-y-0.5 hover:bg-primary-50 hover:text-primary ${isActive ? 'bg-primary-50 text-primary shadow-sm' : 'text-text-secondary'}`
+              `flex min-h-11 min-w-[56px] flex-col items-center justify-center gap-1 rounded-xl px-1.5 py-1 text-[10px] font-semibold transition-all duration-150 hover:bg-primary-50 hover:text-primary hover:shadow-neu-inset-sm sm:min-w-[64px] sm:text-[11px] ${isActive ? 'bg-primary-50 text-primary shadow-neu-inset-sm' : 'text-text-secondary'}`
             }
           >
             <item.icon />
@@ -85,7 +97,7 @@ export default function AdminLayout() {
         ))}
         <button
           onClick={() => setMoreOpen(true)}
-          className={`flex flex-col items-center gap-1 rounded-xl p-2 text-[11px] font-medium min-w-[64px] transition-all duration-150 hover:-translate-y-0.5 hover:bg-primary-50 hover:text-primary ${moreNav.some(i => i.to === location.pathname) ? 'bg-primary-50 text-primary shadow-sm' : 'text-text-secondary'}`}
+          className={`flex min-h-11 min-w-[56px] flex-col items-center justify-center gap-1 rounded-xl px-1.5 py-1 text-[10px] font-semibold transition-all duration-150 hover:bg-primary-50 hover:text-primary hover:shadow-neu-inset-sm sm:min-w-[64px] sm:text-[11px] ${moreNav.some(i => i.to === location.pathname) ? 'bg-primary-50 text-primary shadow-neu-inset-sm' : 'text-text-secondary'}`}
         >
           <MoreIcon />
           Zaidi
@@ -170,6 +182,13 @@ function MoreIcon() {
       <circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none" />
       <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
       <circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+function ReportsIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 19V5m0 14h16M8 15l3-4 3 2 5-7" />
     </svg>
   )
 }
