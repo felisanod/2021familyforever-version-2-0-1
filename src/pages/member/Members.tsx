@@ -4,7 +4,6 @@ import { useDebounce } from '../../hooks/useDebounce'
 import Avatar from '../../components/ui/Avatar'
 import EmptyState from '../../components/ui/EmptyState'
 import Loading from '../../components/ui/Loading'
-import Modal from '../../components/ui/Modal'
 import { RoleBadge } from '../../components/ui/StatusBadge'
 import { friendlyError } from '../../utils/errors'
 
@@ -18,7 +17,7 @@ export default function MemberMembers() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [retryCount, setRetryCount] = useState(0)
-  const [selectedMember, setSelectedMember] = useState<PublicMemberProfile | null>(null)
+  const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null)
   const debouncedSearch = useDebounce(search)
 
   useEffect(() => {
@@ -94,31 +93,73 @@ export default function MemberMembers() {
               <h2 className="text-xs font-bold tracking-[0.15em] text-text-secondary uppercase mb-2">{letter}</h2>
               <div className="card divide-y divide-border-light overflow-hidden">
                 {group.map(m => (
-                  <div key={m.user_id} className="flex items-center gap-3 p-3.5">
-                    <Avatar src={m.profile_picture} name={m.full_name} className="w-10 h-10 text-sm" />
-                    <button
-                      type="button"
-                      onClick={() => setSelectedMember(m)}
-                      className="flex min-h-10 min-w-0 flex-1 items-center gap-3 rounded-lg text-left transition-colors hover:bg-primary-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      aria-label={`Tazama wasifu wa ${m.full_name}`}
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="flex items-center gap-2 truncate text-sm font-medium text-text">
-                          {m.full_name}
-                          {m.role === 'ADMIN' && (
-                            <span className="badge shrink-0 border bg-secondary-50 text-secondary border-secondary/20">
-                              <span aria-hidden className="mr-1">★</span>
-                            </span>
-                          )}
-                        </p>
-                        {(m.region || m.city) && (
-                          <p className="truncate text-xs text-text-secondary">
-                            {[m.city, m.region].filter(Boolean).join(', ')}
+                  <div key={m.user_id}>
+                    <div className="flex items-center gap-3 p-3.5">
+                      <Avatar src={m.profile_picture} name={m.full_name} className="w-10 h-10 text-sm" />
+                      <button
+                        type="button"
+                        onClick={() => setExpandedMemberId(current => current === m.user_id ? null : m.user_id)}
+                        className="flex min-h-10 min-w-0 flex-1 items-center gap-3 rounded-lg text-left transition-colors hover:bg-primary-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        aria-label={`Tazama wasifu wa ${m.full_name}`}
+                        aria-expanded={expandedMemberId === m.user_id}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="flex items-center gap-2 truncate text-sm font-medium text-text">
+                            {m.full_name}
+                            {m.role === 'ADMIN' && (
+                              <span className="badge shrink-0 border bg-secondary-50 text-secondary border-secondary/20">
+                                <span aria-hidden className="mr-1">★</span>
+                              </span>
+                            )}
                           </p>
-                        )}
+                          {(m.region || m.city) && (
+                            <p className="truncate text-xs text-text-secondary">
+                              {[m.city, m.region].filter(Boolean).join(', ')}
+                            </p>
+                          )}
+                        </div>
+                        <span className="text-text-secondary" aria-hidden="true">
+                          {expandedMemberId === m.user_id ? '⌄' : '›'}
+                        </span>
+                      </button>
+                    </div>
+                    {expandedMemberId === m.user_id && (
+                      <div className="border-t border-border-light bg-primary-50/30 px-4 pb-4 pt-3 sm:ml-[4.25rem] sm:mr-4 sm:mb-4 sm:rounded-xl sm:border">
+                        <div className="flex items-center gap-3">
+                          <Avatar
+                            src={m.profile_picture}
+                            name={m.full_name}
+                            className="h-14 w-14 shrink-0 rounded-2xl text-lg"
+                          />
+                          <div className="min-w-0">
+                            <h3 className="break-words font-bold text-text">{m.full_name}</h3>
+                            {m.role === 'ADMIN' && (
+                              <div className="mt-1"><RoleBadge role="ADMIN" /></div>
+                            )}
+                          </div>
+                        </div>
+                        <dl className="mt-3 grid grid-cols-1 gap-3 rounded-xl border border-border-light bg-surface p-3 sm:grid-cols-2">
+                          {m.city && (
+                            <div>
+                              <dt className="text-xs text-text-secondary">Mji</dt>
+                              <dd className="mt-0.5 font-medium text-text">{m.city}</dd>
+                            </div>
+                          )}
+                          {m.region && (
+                            <div>
+                              <dt className="text-xs text-text-secondary">Mkoa</dt>
+                              <dd className="mt-0.5 font-medium text-text">{m.region}</dd>
+                            </div>
+                          )}
+                          {!m.city && !m.region && (
+                            <p className="text-sm text-text-secondary">Hakuna maelezo mengine ya umma yaliyowekwa.</p>
+                          )}
+                        </dl>
+                        <p className="mt-3 text-xs text-text-secondary">
+                          Maelezo ya faragha na mipangilio ya akaunti huonekana kwa msimamizi pekee.
+                        </p>
                       </div>
-                      <span className="text-text-secondary" aria-hidden="true">›</span>
-                    </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -127,54 +168,6 @@ export default function MemberMembers() {
         </div>
       )}
 
-      <Modal
-        open={!!selectedMember}
-        title="Wasifu wa mwanachama"
-        onClose={() => setSelectedMember(null)}
-      >
-        {selectedMember && (
-          <div className="space-y-5">
-            <div className="flex items-center gap-4">
-              <Avatar
-                src={selectedMember.profile_picture}
-                name={selectedMember.full_name}
-                className="h-16 w-16 shrink-0 rounded-2xl text-xl"
-              />
-              <div className="min-w-0">
-                <h2 className="break-words text-lg font-bold text-text">{selectedMember.full_name}</h2>
-                {selectedMember.role === 'ADMIN' && (
-                  <div className="mt-2"><RoleBadge role="ADMIN" /></div>
-                )}
-              </div>
-            </div>
-
-            <dl className="grid grid-cols-1 gap-3 rounded-xl border border-border-light p-4 sm:grid-cols-2">
-              {selectedMember.city && (
-                <div>
-                  <dt className="text-xs text-text-secondary">Mji</dt>
-                  <dd className="mt-0.5 font-medium text-text">{selectedMember.city}</dd>
-                </div>
-              )}
-              {selectedMember.region && (
-                <div>
-                  <dt className="text-xs text-text-secondary">Mkoa</dt>
-                  <dd className="mt-0.5 font-medium text-text">{selectedMember.region}</dd>
-                </div>
-              )}
-              {!selectedMember.city && !selectedMember.region && (
-                <p className="text-sm text-text-secondary">Hakuna maelezo mengine ya umma yaliyowekwa.</p>
-              )}
-            </dl>
-
-            <p className="text-xs text-text-secondary">
-              Maelezo ya faragha na mipangilio ya akaunti huonekana kwa msimamizi pekee.
-            </p>
-            <button type="button" className="btn btn-secondary w-full" onClick={() => setSelectedMember(null)}>
-              Rudi kwenye orodha
-            </button>
-          </div>
-        )}
-      </Modal>
     </div>
   )
 }

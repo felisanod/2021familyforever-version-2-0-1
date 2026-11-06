@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import { supabase, type Profile } from '../../types'
 import {
   listMembers,
@@ -15,7 +15,6 @@ import Avatar from '../../components/ui/Avatar'
 import { AccountBadge, AggregateBadge, PaymentBadge, RoleBadge } from '../../components/ui/StatusBadge'
 import EmptyState from '../../components/ui/EmptyState'
 import Loading from '../../components/ui/Loading'
-import Modal from '../../components/ui/Modal'
 import ConfirmDialog from '../../components/ui/ConfirmDialog'
 import { useToast } from '../../components/ui/Toast'
 
@@ -168,32 +167,45 @@ export default function AdminMembers() {
               </thead>
               <tbody className="divide-y divide-border-light">
                 {members.map(m => (
-                  <tr key={m.user_id} className="hover:bg-border-light/40 cursor-pointer" onClick={() => setSelected(m)}>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <Avatar src={m.profile_picture} name={m.full_name} className="w-8 h-8 text-xs" />
-                        <button
-                          type="button"
-                          className="rounded-lg text-left font-medium text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                          onClick={event => {
-                            event.stopPropagation()
-                            setSelected(m)
-                          }}
-                          aria-label={`Fungua wasifu wa ${m.full_name}`}
-                        >
-                          <span className="font-medium text-text">{m.full_name}</span>
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-text-secondary">{m.phone_number}</td>
-                    <td className="px-4 py-3 text-text-secondary">{m.region || '—'}</td>
-                    <td className="px-4 py-3"><RoleBadge role={m.role} /></td>
-                    <td className="px-4 py-3"><AccountBadge status={m.account_status} /></td>
-                    <td className="px-4 py-3 text-text-secondary whitespace-nowrap">{formatDate(m.created_at)}</td>
-                    <td className="px-4 py-3 text-right" onClick={e => e.stopPropagation()}>
-                      <MemberActions member={m} onAction={setConfirmAction} compact />
-                    </td>
-                  </tr>
+                  <Fragment key={m.user_id}>
+                    <tr
+                      className="hover:bg-border-light/40 cursor-pointer"
+                      onClick={() => setSelected(current => current?.user_id === m.user_id ? null : m)}
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar src={m.profile_picture} name={m.full_name} className="w-8 h-8 text-xs" />
+                          <button
+                            type="button"
+                            className="rounded-lg text-left font-medium text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            onClick={event => {
+                              event.stopPropagation()
+                              setSelected(current => current?.user_id === m.user_id ? null : m)
+                            }}
+                            aria-label={`Fungua wasifu wa ${m.full_name}`}
+                            aria-expanded={selected?.user_id === m.user_id}
+                          >
+                            <span className="font-medium text-text">{m.full_name}</span>
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-text-secondary">{m.phone_number}</td>
+                      <td className="px-4 py-3 text-text-secondary">{m.region || '—'}</td>
+                      <td className="px-4 py-3"><RoleBadge role={m.role} /></td>
+                      <td className="px-4 py-3"><AccountBadge status={m.account_status} /></td>
+                      <td className="px-4 py-3 text-text-secondary whitespace-nowrap">{formatDate(m.created_at)}</td>
+                      <td className="px-4 py-3 text-right" onClick={e => e.stopPropagation()}>
+                        <MemberActions member={m} onAction={setConfirmAction} compact />
+                      </td>
+                    </tr>
+                    {selected?.user_id === m.user_id && (
+                      <tr>
+                        <td colSpan={7} className="border-t border-border-light bg-primary-50/20 p-4">
+                          <MemberDetail member={selected} onAction={setConfirmAction} />
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
@@ -202,21 +214,34 @@ export default function AdminMembers() {
           {/* Mobile cards */}
           <div className="md:hidden space-y-3">
             {members.map(m => (
-              <div key={m.user_id} className="card flex w-full items-start gap-3 p-4">
-                <Avatar src={m.profile_picture} name={m.full_name} className="w-10 h-10 text-sm" />
-                <button type="button" onClick={() => setSelected(m)} className="min-w-0 flex-1 text-left">
-                  <div className="flex items-center gap-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-text truncate">{m.full_name}</p>
-                      <p className="text-xs text-text-secondary">{m.phone_number} · {m.region || '—'}</p>
+              <div key={m.user_id} className="card overflow-hidden">
+                <div className="flex w-full items-start gap-3 p-4">
+                  <Avatar src={m.profile_picture} name={m.full_name} className="w-10 h-10 text-sm" />
+                  <button
+                    type="button"
+                    onClick={() => setSelected(current => current?.user_id === m.user_id ? null : m)}
+                    className="min-w-0 flex-1 text-left"
+                    aria-label={`Fungua wasifu wa ${m.full_name}`}
+                    aria-expanded={selected?.user_id === m.user_id}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-text truncate">{m.full_name}</p>
+                        <p className="text-xs text-text-secondary">{m.phone_number} · {m.region || '—'}</p>
+                      </div>
                     </div>
+                    <div className="mt-3 flex items-center gap-2">
+                      <RoleBadge role={m.role} />
+                      <AccountBadge status={m.account_status} />
+                      <span className="ml-auto text-xs text-text-secondary">{formatDate(m.created_at)}</span>
+                    </div>
+                  </button>
+                </div>
+                {selected?.user_id === m.user_id && (
+                  <div className="border-t border-border-light bg-primary-50/20 p-4">
+                    <MemberDetail member={selected} onAction={setConfirmAction} />
                   </div>
-                  <div className="mt-3 flex items-center gap-2">
-                    <RoleBadge role={m.role} />
-                    <AccountBadge status={m.account_status} />
-                    <span className="ml-auto text-xs text-text-secondary">{formatDate(m.created_at)}</span>
-                  </div>
-                </button>
+                )}
               </div>
             ))}
           </div>
@@ -231,11 +256,6 @@ export default function AdminMembers() {
           )}
         </>
       )}
-
-      {/* Member details */}
-      <Modal open={!!selected} title="Maelezo ya Mwanachama" onClose={() => setSelected(null)} wide>
-        {selected && <MemberDetail member={selected} onAction={setConfirmAction} />}
-      </Modal>
 
       {/* Confirmations */}
       <ConfirmDialog
