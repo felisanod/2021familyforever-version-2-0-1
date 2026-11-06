@@ -10,6 +10,7 @@ import { formatDate, formatTZS } from '../../utils/format'
 import { exportContributionPdf } from '../../utils/contribution-pdf'
 import EmptyState from '../../components/ui/EmptyState'
 import Loading from '../../components/ui/Loading'
+import { useToast } from '../../components/ui/Toast'
 import {
   CollectionProgressChart,
   DistributionChart,
@@ -27,6 +28,7 @@ const STATUS_COLORS = {
 }
 
 export default function AdminReports() {
+  const toast = useToast()
   const [contributions, setContributions] = useState<Contribution[]>([])
   const [selectedId, setSelectedId] = useState('')
   const [rows, setRows] = useState<ContributionMemberRow[]>([])
@@ -127,18 +129,15 @@ export default function AdminReports() {
     })
   }, [rows, search, statusFilter])
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!selectedContribution || loadingRows) return
-    exportContributionPdf({
-      ...selectedContribution,
-      total_members: rows.length,
-      completed_members: analytics.completed,
-      partial_members: analytics.partial,
-      pending_members: 0,
-      unpaid_members: analytics.unpaid,
-      total_collected: analytics.collected,
-      completion_percent: analytics.completionPercent,
-    }, rows)
+    try {
+      await exportContributionPdf(selectedContribution, rows)
+      toast.showToast('Ripoti ya PDF imetengenezwa.')
+    } catch (exportError) {
+      console.error('Failed to export selected contribution PDF', exportError)
+      toast.showToast('Imeshindikana kutengeneza PDF. Tafadhali jaribu tena.', 'error')
+    }
   }
 
   return (

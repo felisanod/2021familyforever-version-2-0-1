@@ -82,10 +82,12 @@ export default function AdminContributions() {
   const handleExport = async (c: ContributionWithStats) => {
     setExportingId(c.contribution_id)
     try {
-      const { rows } = await getContributionMemberStatuses(c.contribution_id)
-      exportContributionPdf(c, rows)
+      const { rows, error } = await getContributionMemberStatuses(c.contribution_id)
+      if (error) throw error
+      await exportContributionPdf(c, rows)
       toast.showToast('Ripoti ya PDF imetengenezwa.')
-    } catch {
+    } catch (error) {
+      console.error('Failed to export contribution PDF', error)
       toast.showToast('Imeshindikana kutengeneza PDF. Tafadhali jaribu tena.', 'error')
     } finally {
       setExportingId(null)
