@@ -92,8 +92,9 @@ never commit that file or the key.
 
 This Vite single-page app is deployed as static assets on a Cloudflare Worker.
 [`wrangler.jsonc`](./wrangler.jsonc) points Wrangler to the built `dist/`
-directory and configures SPA fallback for routes such as `/reports` and
-`/profile`.
+directory, configures SPA fallback for routes such as `/reports` and
+`/profile`, and uses [`src/worker.ts`](./src/worker.ts) as the Worker entry
+point to serve those assets.
 
 In **Workers & Pages → your Worker → Settings → Build**, use:
 
@@ -106,8 +107,11 @@ In **Workers & Pages → your Worker → Settings → Build**, use:
 
 Set the **Deploy command** to `npm run deploy`. Do not set it to
 `npx wrangler versions upload`; that uploads a version rather than performing
-the production deployment. The `deploy` script uses the project's pinned
-Wrangler version and the checked-in static-assets configuration.
+the production deployment. If a separate **Version command** is required by
+the Cloudflare project, set it to `npm run deploy:version`. The checked-in
+Worker entry point and `ASSETS` binding allow that command to load the built
+app instead of failing because there is no Worker script. Both npm scripts use
+the project's pinned Wrangler version.
 Node `22` is pinned by `.nvmrc`. `public/_headers` is copied into `dist/` so
 the service worker and web manifest are refreshed promptly after deployment.
 
