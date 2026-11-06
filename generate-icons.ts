@@ -10,7 +10,7 @@
 import sharp from 'sharp'
 import { mkdir } from 'fs/promises'
 
-const SOURCE = 'icon/image.jpeg'
+const SOURCE = 'icon/image.png'
 // Launchers add their own circular/squircle masks. A tighter crop keeps the
 // family artwork visually large inside those masks instead of looking small.
 const ICON_ZOOM = 1.36

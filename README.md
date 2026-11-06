@@ -39,7 +39,7 @@ notification permission alone cannot provide background push.
 
 ### PWA assets
 
-All branding assets are generated from the family photo in `icon/image.jpeg`:
+All branding assets are generated from the family photo in `icon/image.png`:
 
 ```bash
 npx tsx generate-icons.ts
