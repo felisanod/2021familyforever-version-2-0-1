@@ -1,27 +1,33 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Profile } from '../../types'
-import { listMemberDirectory } from '../../services/members'
+import { listMemberDirectory, type PublicMemberProfile } from '../../services/members'
 import { useDebounce } from '../../hooks/useDebounce'
 import Avatar from '../../components/ui/Avatar'
 import EmptyState from '../../components/ui/EmptyState'
 import Loading from '../../components/ui/Loading'
+import Modal from '../../components/ui/Modal'
+import { RoleBadge } from '../../components/ui/StatusBadge'
+import { friendlyError } from '../../utils/errors'
 
 /**
  * Family directory for members — read-only list of active members.
  * No administrative actions are available here.
  */
 export default function MemberMembers() {
-  const [members, setMembers] = useState<Profile[]>([])
+  const [members, setMembers] = useState<PublicMemberProfile[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+  const [retryCount, setRetryCount] = useState(0)
+  const [selectedMember, setSelectedMember] = useState<PublicMemberProfile | null>(null)
   const debouncedSearch = useDebounce(search)
 
   useEffect(() => {
     let cancelled = false
     async function load() {
       setLoading(true)
-      const { members: data } = await listMemberDirectory(debouncedSearch)
+      const { members: data, error: queryError } = await listMemberDirectory(debouncedSearch)
       if (!cancelled) {
+        setError(queryError ? friendlyError(queryError) : '')
         setMembers(data)
         setLoading(false)
       }
@@ -30,11 +36,11 @@ export default function MemberMembers() {
     return () => {
       cancelled = true
     }
-  }, [debouncedSearch])
+  }, [debouncedSearch, retryCount])
 
   const grouped = useMemo(() => {
     // Group by first letter of name for a clean, scannable directory.
-    const groups = new Map<string, Profile[]>()
+    const groups = new Map<string, PublicMemberProfile[]>()
     for (const m of members) {
       const letter = (m.full_name?.charAt(0) ?? '#').toUpperCase()
       groups.set(letter, [...(groups.get(letter) ?? []), m])
@@ -63,7 +69,18 @@ export default function MemberMembers() {
         </svg>
       </div>
 
-      {loading ? (
+      {error ? (
+        <div className="card p-5 text-center" role="alert">
+          <p className="text-sm text-error">{error}</p>
+          <button
+            type="button"
+            className="btn btn-secondary mt-3"
+            onClick={() => setRetryCount(value => value + 1)}
+          >
+            Jaribu tena
+          </button>
+        </div>
+      ) : loading ? (
         <Loading />
       ) : members.length === 0 ? (
         <EmptyState
@@ -77,7 +94,13 @@ export default function MemberMembers() {
               <h2 className="text-xs font-bold tracking-[0.15em] text-text-secondary uppercase mb-2">{letter}</h2>
               <div className="card divide-y divide-border-light overflow-hidden">
                 {group.map(m => (
-                  <div key={m.user_id} className="flex items-center gap-3 p-3.5">
+                  <button
+                    key={m.user_id}
+                    type="button"
+                    onClick={() => setSelectedMember(m)}
+                    className="flex min-h-16 w-full items-center gap-3 p-3.5 text-left transition-colors hover:bg-primary-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+                    aria-label={`Tazama wasifu wa ${m.full_name}`}
+                  >
                     <Avatar src={m.profile_picture} name={m.full_name} className="w-10 h-10 text-sm" />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-text truncate flex items-center gap-2">
@@ -94,13 +117,63 @@ export default function MemberMembers() {
                         </p>
                       )}
                     </div>
-                  </div>
+                    <span className="text-text-secondary" aria-hidden="true">›</span>
+                  </button>
                 ))}
               </div>
             </section>
           ))}
         </div>
       )}
+
+      <Modal
+        open={!!selectedMember}
+        title="Wasifu wa mwanachama"
+        onClose={() => setSelectedMember(null)}
+      >
+        {selectedMember && (
+          <div className="space-y-5">
+            <div className="flex items-center gap-4">
+              <Avatar
+                src={selectedMember.profile_picture}
+                name={selectedMember.full_name}
+                className="h-16 w-16 shrink-0 rounded-2xl text-xl"
+              />
+              <div className="min-w-0">
+                <h2 className="break-words text-lg font-bold text-text">{selectedMember.full_name}</h2>
+                {selectedMember.role === 'ADMIN' && (
+                  <div className="mt-2"><RoleBadge role="ADMIN" /></div>
+                )}
+              </div>
+            </div>
+
+            <dl className="grid grid-cols-1 gap-3 rounded-xl border border-border-light p-4 sm:grid-cols-2">
+              {selectedMember.city && (
+                <div>
+                  <dt className="text-xs text-text-secondary">Mji</dt>
+                  <dd className="mt-0.5 font-medium text-text">{selectedMember.city}</dd>
+                </div>
+              )}
+              {selectedMember.region && (
+                <div>
+                  <dt className="text-xs text-text-secondary">Mkoa</dt>
+                  <dd className="mt-0.5 font-medium text-text">{selectedMember.region}</dd>
+                </div>
+              )}
+              {!selectedMember.city && !selectedMember.region && (
+                <p className="text-sm text-text-secondary">Hakuna maelezo mengine ya umma yaliyowekwa.</p>
+              )}
+            </dl>
+
+            <p className="text-xs text-text-secondary">
+              Maelezo ya faragha na mipangilio ya akaunti huonekana kwa msimamizi pekee.
+            </p>
+            <button type="button" className="btn btn-secondary w-full" onClick={() => setSelectedMember(null)}>
+              Rudi kwenye orodha
+            </button>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

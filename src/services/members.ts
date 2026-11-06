@@ -9,6 +9,11 @@ export type MemberFilters = {
   pageSize?: number
 }
 
+export type PublicMemberProfile = Pick<
+  Profile,
+  'user_id' | 'full_name' | 'region' | 'city' | 'profile_picture' | 'role'
+>
+
 /** Paginated, searchable member list (admin). */
 export async function listMembers(filters: MemberFilters = {}) {
   const page = filters.page ?? 1
@@ -36,7 +41,7 @@ export async function listMembers(filters: MemberFilters = {}) {
 }
 
 /** Read-only family directory for members: active members, basic info only. */
-export async function listMemberDirectory(search?: string): Promise<{ members: Profile[]; error: unknown }> {
+export async function listMemberDirectory(search?: string): Promise<{ members: PublicMemberProfile[]; error: unknown }> {
   let query = supabase
     .from('profiles')
     .select('user_id, full_name, region, city, profile_picture, role')
@@ -49,7 +54,7 @@ export async function listMemberDirectory(search?: string): Promise<{ members: P
   }
 
   const { data, error } = await query
-  return { members: (data ?? []) as Profile[], error }
+  return { members: (data ?? []) as PublicMemberProfile[], error }
 }
 
 export async function getMember(memberId: string) {

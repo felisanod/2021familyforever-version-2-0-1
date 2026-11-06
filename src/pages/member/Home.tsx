@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { supabase, type Announcement, type Notification, type Profile } from '../../types'
-import { listMemberDirectory } from '../../services/members'
+import { supabase, type Announcement, type Notification } from '../../types'
+import { listMemberDirectory, type PublicMemberProfile } from '../../services/members'
 import { useRealtimeRefresh } from '../../hooks/useRealtimeRefresh'
 import { greetingForHour, formatDateShort, formatTZS, timeAgo, initialsOf } from '../../utils/format'
 import EmptyState from '../../components/ui/EmptyState'
@@ -15,7 +15,7 @@ export default function MemberHome() {
   const [counts, setCounts] = useState<StatusCounts | null>(null)
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [activity, setActivity] = useState<Notification[]>([])
-  const [directory, setDirectory] = useState<Profile[]>([])
+  const [directory, setDirectory] = useState<PublicMemberProfile[]>([])
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
