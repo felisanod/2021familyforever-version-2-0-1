@@ -98,14 +98,14 @@ In **Workers & Pages → your Worker → Settings → Build**, use:
 | Setting | Value |
 | --- | --- |
 | Build command | `npm run build` |
-| Deploy command | `npx wrangler deploy` |
+| Deploy command | `npm run deploy` |
 | Root directory | `/` |
 | Git branch | The branch you want Cloudflare to deploy (for example `main`) |
 
-Do not use `npx wrangler versions upload` as the deploy command. That command
-does not replace the normal deployment step, and without a Wrangler
-configuration containing a Worker entry point or static asset directory it
-fails with “Missing entry-point to Worker script or to assets directory”.
+Set the **Deploy command** to `npm run deploy`. Do not set it to
+`npx wrangler versions upload`; that uploads a version rather than performing
+the production deployment. The `deploy` script uses the project's pinned
+Wrangler version and the checked-in static-assets configuration.
 Node `22` is pinned by `.nvmrc`. `public/_headers` is copied into `dist/` so
 the service worker and web manifest are refreshed promptly after deployment.
 

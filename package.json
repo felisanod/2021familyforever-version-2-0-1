@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
+    "deploy": "wrangler deploy --config=./wrangler.jsonc",
     "lint": "oxlint",
     "preview": "vite preview --host 0.0.0.0 --port 4173",
     "android:sync": "npm run build && cap sync android",
@@ -35,6 +36,7 @@
     "oxlint": "^1.79.0",
     "sharp": "^0.35.3",
     "typescript": "~6.0.2",
-    "vite": "^8.2.2"
+    "vite": "^8.2.2",
+    "wrangler": "4.158.0"
   }
 }
