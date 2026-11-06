@@ -86,29 +86,28 @@ never commit that file or the key.
 
 ---
 
-## Deploy to Cloudflare Pages
+## Deploy to Cloudflare Workers
 
-This project is ready for Cloudflare Pages. It is a Vite single-page app, so
-Cloudflare Pages will automatically serve `index.html` for app routes such as
-`/updates` and `/profile` (as long as there is no top-level `404.html`).
+This Vite single-page app is deployed as static assets on a Cloudflare Worker.
+[`wrangler.jsonc`](./wrangler.jsonc) points Wrangler to the built `dist/`
+directory and configures SPA fallback for routes such as `/reports` and
+`/profile`.
 
-1. Create a GitHub repository and push this project to its `main` branch.
-2. In Cloudflare, go to **Workers & Pages → Create application → Pages → Import an existing Git repository**.
-3. Select the repository and use these build settings:
+In **Workers & Pages → your Worker → Settings → Build**, use:
 
-   | Setting | Value |
-   | --- | --- |
-   | Framework preset | Vite |
-   | Build command | `npm ci && npm run build` |
-   | Build output directory | `dist` |
-   | Node version | `22` (also pinned by `.nvmrc`) |
+| Setting | Value |
+| --- | --- |
+| Build command | `npm run build` |
+| Deploy command | `npx wrangler deploy` |
+| Root directory | `/` |
+| Git branch | The branch you want Cloudflare to deploy (for example `main`) |
 
-4. Select **Save and Deploy**. Cloudflare provides a secure `*.pages.dev` URL.
-5. To use a custom domain, add it under **Pages → Custom domains** and follow
-   Cloudflare's DNS instructions. HTTPS is automatic after the domain is active.
-
-`public/_headers` is copied into `dist/_headers` during the build. It ensures
-the service worker and web manifest are refreshed promptly after a deployment.
+Do not use `npx wrangler versions upload` as the deploy command. That command
+does not replace the normal deployment step, and without a Wrangler
+configuration containing a Worker entry point or static asset directory it
+fails with “Missing entry-point to Worker script or to assets directory”.
+Node `22` is pinned by `.nvmrc`. `public/_headers` is copied into `dist/` so
+the service worker and web manifest are refreshed promptly after deployment.
 
 ---
 
