@@ -1,4 +1,5 @@
 {
+  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "2021familyforever-version-2-0-1",
   "compatibility_date": "2026-11-06",
   "assets": {
