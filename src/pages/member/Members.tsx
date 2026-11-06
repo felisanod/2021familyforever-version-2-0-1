@@ -94,31 +94,32 @@ export default function MemberMembers() {
               <h2 className="text-xs font-bold tracking-[0.15em] text-text-secondary uppercase mb-2">{letter}</h2>
               <div className="card divide-y divide-border-light overflow-hidden">
                 {group.map(m => (
-                  <button
-                    key={m.user_id}
-                    type="button"
-                    onClick={() => setSelectedMember(m)}
-                    className="flex min-h-16 w-full items-center gap-3 p-3.5 text-left transition-colors hover:bg-primary-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
-                    aria-label={`Tazama wasifu wa ${m.full_name}`}
-                  >
+                  <div key={m.user_id} className="flex items-center gap-3 p-3.5">
                     <Avatar src={m.profile_picture} name={m.full_name} className="w-10 h-10 text-sm" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-text truncate flex items-center gap-2">
-                        {m.full_name}
-                        {m.role === 'ADMIN' && (
-                          <span className="badge border bg-secondary-50 text-secondary border-secondary/20 shrink-0">
-                            <span aria-hidden className="mr-1">★</span>
-                          </span>
-                        )}
-                      </p>
-                      {(m.region || m.city) && (
-                        <p className="text-xs text-text-secondary truncate">
-                          {[m.city, m.region].filter(Boolean).join(', ')}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedMember(m)}
+                      className="flex min-h-10 min-w-0 flex-1 items-center gap-3 rounded-lg text-left transition-colors hover:bg-primary-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      aria-label={`Tazama wasifu wa ${m.full_name}`}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="flex items-center gap-2 truncate text-sm font-medium text-text">
+                          {m.full_name}
+                          {m.role === 'ADMIN' && (
+                            <span className="badge shrink-0 border bg-secondary-50 text-secondary border-secondary/20">
+                              <span aria-hidden className="mr-1">★</span>
+                            </span>
+                          )}
                         </p>
-                      )}
-                    </div>
-                    <span className="text-text-secondary" aria-hidden="true">›</span>
-                  </button>
+                        {(m.region || m.city) && (
+                          <p className="truncate text-xs text-text-secondary">
+                            {[m.city, m.region].filter(Boolean).join(', ')}
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-text-secondary" aria-hidden="true">›</span>
+                    </button>
+                  </div>
                 ))}
               </div>
             </section>

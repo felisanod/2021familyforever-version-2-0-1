@@ -170,18 +170,20 @@ export default function AdminMembers() {
                 {members.map(m => (
                   <tr key={m.user_id} className="hover:bg-border-light/40 cursor-pointer" onClick={() => setSelected(m)}>
                     <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar src={m.profile_picture} name={m.full_name} className="w-8 h-8 text-xs" />
                         <button
                           type="button"
-                          className="flex items-center gap-3 rounded-lg text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          className="rounded-lg text-left font-medium text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           onClick={event => {
                             event.stopPropagation()
                             setSelected(m)
                           }}
                           aria-label={`Fungua wasifu wa ${m.full_name}`}
                         >
-                          <Avatar src={m.profile_picture} name={m.full_name} className="w-8 h-8 text-xs" />
                           <span className="font-medium text-text">{m.full_name}</span>
                         </button>
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-text-secondary">{m.phone_number}</td>
                     <td className="px-4 py-3 text-text-secondary">{m.region || '—'}</td>
@@ -200,20 +202,22 @@ export default function AdminMembers() {
           {/* Mobile cards */}
           <div className="md:hidden space-y-3">
             {members.map(m => (
-              <button type="button" key={m.user_id} onClick={() => setSelected(m)} className="card p-4 w-full text-left">
-                <div className="flex items-center gap-3">
-                  <Avatar src={m.profile_picture} name={m.full_name} className="w-10 h-10 text-sm" />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-text truncate">{m.full_name}</p>
-                    <p className="text-xs text-text-secondary">{m.phone_number} · {m.region || '—'}</p>
+              <div key={m.user_id} className="card flex w-full items-start gap-3 p-4">
+                <Avatar src={m.profile_picture} name={m.full_name} className="w-10 h-10 text-sm" />
+                <button type="button" onClick={() => setSelected(m)} className="min-w-0 flex-1 text-left">
+                  <div className="flex items-center gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-text truncate">{m.full_name}</p>
+                      <p className="text-xs text-text-secondary">{m.phone_number} · {m.region || '—'}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2 mt-3">
-                  <RoleBadge role={m.role} />
-                  <AccountBadge status={m.account_status} />
-                  <span className="text-xs text-text-secondary ml-auto">{formatDate(m.created_at)}</span>
-                </div>
-              </button>
+                  <div className="mt-3 flex items-center gap-2">
+                    <RoleBadge role={m.role} />
+                    <AccountBadge status={m.account_status} />
+                    <span className="ml-auto text-xs text-text-secondary">{formatDate(m.created_at)}</span>
+                  </div>
+                </button>
+              </div>
             ))}
           </div>
 

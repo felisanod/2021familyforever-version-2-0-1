@@ -38,11 +38,20 @@ export default function Avatar({ src, name, className = 'w-9 h-9 text-xs' }: Pro
         className={`relative shrink-0 rounded-full bg-primary-50 text-primary font-semibold flex items-center justify-center overflow-hidden ${className} ${
           src ? 'cursor-zoom-in' : ''
         }`}
-        onClick={src ? () => setPreview(true) : undefined}
+        onClick={src ? e => {
+          e.stopPropagation()
+          setPreview(true)
+        } : undefined}
         role={src ? 'button' : undefined}
         tabIndex={src ? 0 : undefined}
         aria-label={src ? 'Onyesha picha ya wasifu' : undefined}
-        onKeyDown={src ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPreview(true) } } : undefined}
+        onKeyDown={src ? e => {
+          e.stopPropagation()
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            setPreview(true)
+          }
+        } : undefined}
         title={src ? 'Bofya kuona picha' : undefined}
       >
         {src ? <img src={src} alt="" className="w-full h-full object-cover" /> : initials}
